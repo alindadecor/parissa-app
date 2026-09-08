@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #F9F7F2;
+    color: #1A1A1A;
+  }
+
+  h1, h2, h3, .font-serif-luxury {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+.font-script {
+  font-family: 'Alex Brush', 'Playfair Display', cursive;
+}
+
+.font-serif-luxury {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-sans-luxury {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Artistic Flair subtle canvas details */
+.bg-artistic-canvas {
+  background-color: #F9F7F2;
+}
+
+.bg-artistic-surface {
+  background-color: #E8E4D9;
+}
+
+.bg-artistic-surface-subtle {
+  background-color: #F2EFE8;
+}
+
+.border-artistic {
+  border-color: rgba(26, 26, 26, 0.1);
+}
+
+.border-artistic-strong {
+  border-color: rgba(26, 26, 26, 0.2);
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #F9F7F2;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1CDC2;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1A1A1A;
+}

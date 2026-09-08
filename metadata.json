@@ -1,0 +1,6 @@
+{
+  "name": "PARISSA",
+  "description": "Bespoke fine jewelry maison pairing celestial astrology, intention gems, and handcrafted diamond rings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
