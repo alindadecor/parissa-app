@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Navbar } from './components/Navbar';
-import { Footer } from './components/Footer';
-import { HomeHero } from './components/HomeHero';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { JourneyFlow } from './components/JourneyFlow';
 import { ExploreRings } from './components/ExploreRings';
 import { CollectionsView } from './components/CollectionsView';
@@ -19,7 +16,6 @@ type EditorialPage = 'journal' | 'about' | 'craft';
 
 function AppContent() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [presetShape, setPresetShape] = useState<DiamondShape>('oval');
 
@@ -95,19 +91,10 @@ function AppContent() {
     }
   }, [savedStories]);
 
-  // Derived current view from URL
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const currentView = pathSegments[0] ?? 'home';
-
   // Handlers
   const handleStartJourney = (shape?: DiamondShape) => {
     if (shape) setPresetShape(shape);
     navigate('/journey');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleExploreRings = () => {
-    navigate('/explore');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -140,34 +127,13 @@ function AppContent() {
     return savedStories.some((item) => item.id === configId);
   };
 
-  const handleNavigate = (view: string) => {
-    navigate(`/${view}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-[#F9F7F2] text-[#1A1A1A] font-sans selection:bg-[#E8E4D9] selection:text-[#1A1A1A]">
-      <Navbar
-        currentView={currentView}
-        onNavigate={handleNavigate}
-        bagCount={cartItems.length}
-        savedStoriesCount={savedStories.length}
-        onOpenBag={() => setIsBagOpen(true)}
-        onOpenStories={() => setIsStoriesOpen(true)}
-      />
-
       <main className="flex-1">
         <Routes>
           <Route
             path="/"
-            element={
-              <ErrorBoundary>
-                <HomeHero
-                  onStartJourney={() => handleStartJourney('oval')}
-                  onExploreRings={handleExploreRings}
-                />
-              </ErrorBoundary>
-            }
+            element={<Navigate to="https://parissa-diamond-tta2zg1y.myshopify.com" replace />}
           />
           <Route
             path="/journey"
@@ -240,22 +206,10 @@ function AppContent() {
           />
           <Route
             path="*"
-            element={
-              <ErrorBoundary>
-                <HomeHero
-                  onStartJourney={() => handleStartJourney('oval')}
-                  onExploreRings={handleExploreRings}
-                />
-              </ErrorBoundary>
-            }
+            element={<Navigate to="https://parissa-diamond-tta2zg1y.myshopify.com" replace />}
           />
         </Routes>
       </main>
-
-      <Footer
-        onStartJourney={() => handleStartJourney('oval')}
-        onNavigate={handleNavigate}
-      />
 
       {selectedProductForPDP && (
         <ProductDetailModal
