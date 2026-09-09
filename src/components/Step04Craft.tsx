@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   DiamondShape,
   MetalType,
@@ -11,8 +11,8 @@ import {
 } from '../types';
 import { METALS, DIAMOND_SHAPES, COLLECTIONS } from '../data/parissaData';
 import { JewelryCanvas } from './JewelryCanvas';
-import { PriceDisplay } from './PriceDisplay';
-import { ArrowRight, ArrowLeft, Info, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Info, Sparkles } from 'lucide-react';
+import { NorthStarIcon } from './GemIcon';
 
 interface Step04Props {
   initialConfig: Partial<RingConfiguration>;
@@ -20,7 +20,25 @@ interface Step04Props {
   intentionOutcome: IntentionOutcome;
   onComplete: (config: Partial<RingConfiguration>) => void;
   onBack: () => void;
+  onSaveExit?: () => void;
 }
+
+const CDN = 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files';
+const RING_IMAGES: Record<MetalType, string> = {
+  '18k-rose-gold': `${CDN}/18k-rose-gold-ring.png`,
+  '18k-yellow-gold': `${CDN}/18k-yellow-gold-ring.png`,
+  '18k-white-gold': `${CDN}/18k-white-gold-ring.png`,
+  platinum: `${CDN}/18k-white-gold-ring.png`, // closest visual match for platinum
+};
+
+const SUB_STEPS = [
+  { num: 1, label: 'Intro' },
+  { num: 2, label: 'Shape' },
+  { num: 3, label: 'Setting' },
+  { num: 4, label: 'Metal' },
+  { num: 5, label: 'Size' },
+  { num: 6, label: 'Summary' },
+];
 
 export const Step04Craft: React.FC<Step04Props> = ({
   initialConfig,
@@ -36,14 +54,17 @@ export const Step04Craft: React.FC<Step04Props> = ({
   const [diamondType, setDiamondType] = useState<DiamondType>(
     initialConfig.diamondType || 'natural'
   );
-  const [carat, setCarat] = useState<number>(initialConfig.carat || 1.5);
+  const [carat, setCarat] = useState<number>(initialConfig.carat || 1.0);
   const [metal, setMetal] = useState<MetalType>(initialConfig.metal || '18k-yellow-gold');
   const [ringSize, setRingSize] = useState<number>(initialConfig.ringSize || 6.5);
   const [bandWidth, setBandWidth] = useState<BandWidth>(
     initialConfig.bandWidth || 'classic'
   );
 
-  const [showSizerModal, setShowSizerModal] = useState(false);
+  const [subStep, setSubStep] = useState<number>(1);
+  const touchX = useRef<number | null>(null);
+
+  const ringSizes = [4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0];
 
   const handleProceed = () => {
     onComplete({
@@ -59,38 +80,438 @@ export const Step04Craft: React.FC<Step04Props> = ({
     });
   };
 
-  const carats = [1.0, 1.5, 2.0, 2.5, 3.0];
-  const ringSizes = [4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0];
+  const goNext = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (subStep >= 6) {
+      handleProceed();
+    } else {
+      setSubStep((prev) => prev + 1);
+    }
+  };
+
+  const goPrev = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (subStep <= 1) {
+      onBack();
+    } else {
+      setSubStep((prev) => prev - 1);
+    }
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchX.current = e.touches[0].clientX;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+    if (delta < -60) goNext();
+    else if (delta > 60) goPrev();
+  };
+
+  const shapeInfo = DIAMOND_SHAPES[shape];
+  const metalInfo = METALS[metal];
+  const collectionInfo = COLLECTIONS[collection];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      {/* Step Header */}
-      <div className="flex items-center justify-between pb-8 mb-10 border-b border-[#1A1A1A]/10 text-xs font-sans uppercase tracking-[0.25em] text-[#1A1A1A]/50">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 hover:text-[#1A1A1A] transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Intention</span>
-        </button>
-        <span className="font-semibold text-[#1A1A1A]">
-          Step 04 of 05 • Craft Configurator
-        </span>
-        <span className="hidden sm:inline">Melbourne Maison Atelier</span>
+    <div
+      className="min-h-[100dvh] bg-[#f7f3ed] text-[#17242c] flex flex-col"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* ============ SHARED CRAFT HEADER ============ */}
+      <div className="border-b border-[#d4cbc1] bg-[#f7f3ed] px-6 sm:px-10 py-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between text-xs font-sans">
+          <div className="flex items-center gap-6 sm:gap-8">
+            <span className="font-semibold uppercase tracking-[0.22em] text-[#17242c]">
+              04 / 05 <span className="ml-1 text-[#c9a15a]">CRAFT</span>
+            </span>
+            {/* Sub-step checkmarks */}
+            <div className="hidden md:flex items-center gap-3">
+              {SUB_STEPS.map((s) => {
+                const isDone = subStep > s.num;
+                const isActive = subStep === s.num;
+                return (
+                  <div key={s.num} className="flex items-center gap-3">
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans border transition-colors ${
+                        isActive
+                          ? 'bg-[#c9a15a] border-[#c9a15a] text-[#f7f3ed] font-bold'
+                          : isDone
+                          ? 'bg-[#13292a] border-[#13292a] text-[#f7f3ed]'
+                          : 'border-[#d4cbc1] text-[#17242c]/40'
+                      }`}
+                    >
+                      {isDone ? <Check size={11} strokeWidth={2.5} /> : `0${s.num}`}
+                    </span>
+                    {s.num < 6 && <span className="w-3 h-px bg-[#d4cbc1]" />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            onClick={goPrev}
+            className="flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-[#17242c]/50 hover:text-[#17242c] transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={13} />
+            <span>{subStep <= 1 ? 'Back to Intention' : '‹ Prev'}</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* Left Column: Live Ring Canvas & Secret Inner Bridge */}
-        <div className="lg:col-span-6 lg:sticky lg:top-28">
-          <div className="bg-[#E8E4D9]/40 border border-[#1A1A1A]/10 p-8 rounded-sm text-center relative flex flex-col items-center justify-between min-h-[520px]">
-            {/* Top metadata */}
-            <div className="w-full flex items-center justify-between text-[10px] font-sans uppercase tracking-[0.25em] text-[#1A1A1A]/50">
-              <span>Bespoke Solitaire Atelier</span>
-              <span className="font-semibold text-[#1A1A1A]">{collection}</span>
+      {/* ============ SUB-STEP 01 · CRAFT INTRO ============ */}
+      {subStep === 1 && (
+        <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 sm:py-16 animate-fadeIn flex flex-col items-center text-center">
+          <div className="flex items-center gap-2 text-[#c9a15a] mb-6">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="text-[10px]">✦</span>
+            ))}
+          </div>
+
+          <h1 className="font-serif-luxury text-4xl sm:text-5xl font-light text-[#17242c] leading-[1.05] max-w-xl">
+            Let's bring your intention to life.
+          </h1>
+          <p className="font-serif text-base sm:text-lg text-[#17242c]/70 leading-relaxed mt-5 max-w-lg">
+            Four small choices craft your talisman — the diamond, its setting, its metal, and its
+            weight. Each carries the light of{' '}
+            <span className="italic text-[#4d3023]">
+              {intentionOutcome.intentionGem.name}
+            </span>{' '}
+            inward, toward you.
+          </p>
+
+          {/* Ring imagery */}
+          <div className="mt-10 w-full max-w-sm overflow-hidden rounded-2xl border border-[#d4cbc1] bg-[#eee6dd]">
+            <img
+              src={RING_IMAGES[metal]}
+              alt="PARISSA handcrafted ring"
+              className="w-full h-72 object-cover"
+            />
+            <div className="p-5 flex items-center justify-between">
+              <div className="text-left">
+                <p className="font-serif-luxury text-lg text-[#17242c]">{metalInfo.name}</p>
+                <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d] mt-0.5">
+                  {collectionInfo.name}
+                </p>
+              </div>
+              <NorthStarIcon size={18} className="text-[#c9a15a]" />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={goNext}
+            className="mt-12 inline-flex items-center gap-3 px-10 py-4 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.25em] font-medium transition-all shadow-sm cursor-pointer group"
+          >
+            <Sparkles size={14} />
+            <span>Get Started</span>
+            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+      )}
+
+      {/* ============ SUB-STEP 02 · DIAMOND SHAPE ============ */}
+      {subStep === 2 && (
+        <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 sm:py-14 animate-fadeIn">
+          <p className="font-sans text-[11px] uppercase tracking-[0.3em] text-[#69635d] font-semibold">
+            Diamond Shape
+          </p>
+          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-light text-[#17242c] mt-2 leading-tight">
+            The silhouette of your story.
+          </h2>
+          <p className="font-sans text-xs sm:text-sm text-[#17242c]/60 mt-3 max-w-md leading-relaxed">
+            Three shapes are enough — when the journey is the product.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10">
+            {(['round', 'oval', 'marquise'] as DiamondShape[]).map((s) => {
+              const info = DIAMOND_SHAPES[s];
+              const isSelected = shape === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setShape(s)}
+                  className={`p-6 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
+                      : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isSelected ? 'bg-[#4d3023] text-[#f7f3ed]' : 'bg-[#f7f3ed] text-[#17242c]/50'
+                    }`}
+                  >
+                    {isSelected ? (
+                      <Check size={16} strokeWidth={2.5} />
+                    ) : (
+                      <span className="font-serif text-base">✦</span>
+                    )}
+                  </div>
+                  <h3 className="font-serif-luxury text-2xl text-[#17242c] mt-5">{info.name}</h3>
+                  <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#4d3023] mt-1">
+                    {info.title}
+                  </p>
+                  <p className="font-serif text-sm text-[#17242c]/65 leading-relaxed mt-3">
+                    {info.character}
+                  </p>
+                  <p className="font-sans text-[11px] text-[#17242c]/50 leading-relaxed mt-2">
+                    {info.poeticNote}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="pt-10 flex items-center justify-between border-t border-[#d4cbc1] mt-12">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all cursor-pointer group shadow-sm"
+            >
+              <span>Next</span>
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============ SUB-STEP 03 · SETTING STYLE ============ */}
+      {subStep === 3 && (
+        <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 sm:py-14 animate-fadeIn">
+          <p className="font-sans text-[11px] uppercase tracking-[0.3em] text-[#69635d] font-semibold">
+            Setting Style
+          </p>
+          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-light text-[#17242c] mt-2 leading-tight">
+            The architecture of intimacy.
+          </h2>
+          <p className="font-sans text-xs sm:text-sm text-[#17242c]/60 mt-3 max-w-md leading-relaxed">
+            Every PARISSA setting hides your two talisman gems — one inward, one outward.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+            {(Object.keys(COLLECTIONS) as CollectionName[]).map((colKey) => {
+              const colInfo = COLLECTIONS[colKey];
+              const isSelected = collection === colKey;
+              return (
+                <button
+                  key={colKey}
+                  type="button"
+                  onClick={() => setCollection(colKey)}
+                  className={`p-6 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
+                      : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-serif-luxury text-2xl text-[#17242c]">
+                        {colInfo.name}
+                      </h3>
+                      <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#4d3023] mt-1">
+                        {colInfo.tagline}
+                      </p>
+                    </div>
+                    {isSelected && (
+                      <span className="w-7 h-7 rounded-full bg-[#4d3023] text-[#f7f3ed] flex items-center justify-center shrink-0">
+                        <Check size={13} strokeWidth={2.5} />
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-serif text-sm text-[#17242c]/65 leading-relaxed mt-4">
+                    {colInfo.description.split('.')[0]}.
+                  </p>
+                  <p className="font-sans text-[10px] uppercase tracking-wider text-[#69635d] mt-3">
+                    {colInfo.architecturalDetail}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="pt-10 flex items-center justify-between border-t border-[#d4cbc1] mt-12">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all cursor-pointer group shadow-sm"
+            >
+              <span>Next</span>
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============ SUB-STEP 04 · METAL ============ */}
+      {subStep === 4 && (
+        <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 sm:py-14 animate-fadeIn">
+          <p className="font-sans text-[11px] uppercase tracking-[0.3em] text-[#69635d] font-semibold">
+            Noble Metal
+          </p>
+          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-light text-[#17242c] mt-2 leading-tight">
+            The warmth your light will live in.
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+            {(Object.keys(METALS) as MetalType[]).map((mKey) => {
+              const info = METALS[mKey];
+              const isSelected = metal === mKey;
+              return (
+                <button
+                  key={mKey}
+                  type="button"
+                  onClick={() => setMetal(mKey)}
+                  className={`p-6 rounded-2xl border flex items-center gap-5 text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
+                      : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
+                  }`}
+                >
+                  <div
+                    className={`w-12 h-12 rounded-full border border-[#d4cbc1] shadow-sm shrink-0 flex items-center justify-center ${
+                      isSelected ? 'bg-[#4d3023] text-[#f7f3ed]' : 'bg-[#f7f3ed] text-[#17242c]/50'
+                    }`}
+                    style={{ backgroundColor: isSelected ? undefined : info.hex }}
+                  >
+                    {isSelected ? <Check size={18} strokeWidth={2.5} /> : null}
+                  </div>
+                  <div className="min-w-0 text-left flex-1">
+                    <h3 className="font-serif-luxury text-xl text-[#17242c]">{info.name}</h3>
+                    <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#4d3023] mt-0.5">
+                      {info.subtitle}
+                    </p>
+                    <p className="font-sans text-[11px] text-[#17242c]/55 leading-relaxed mt-1.5">
+                      {info.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="pt-10 flex items-center justify-between border-t border-[#d4cbc1] mt-12">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all cursor-pointer group shadow-sm"
+            >
+              <span>Next</span>
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============ SUB-STEP 05 · DIAMOND SIZE ============ */}
+      {subStep === 5 && (
+        <div className="flex-1 max-w-2xl mx-auto w-full px-6 py-12 sm:py-14 animate-fadeIn">
+          <p className="font-sans text-[11px] uppercase tracking-[0.3em] text-[#69635d] font-semibold">
+            Diamond Size
+          </p>
+          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-light text-[#17242c] mt-2 leading-tight">
+            Chosen by balance, not more.
+          </h2>
+
+          <div className="mt-10 bg-[#eee6dd] border border-[#d4cbc1] rounded-2xl p-7 sm:p-8">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="font-serif-luxury text-5xl font-light text-[#4d3023]">
+                  {carat.toFixed(1)}
+                  <span className="text-2xl ml-1">ct</span>
+                </p>
+                <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#69635d] mt-1.5">
+                  Centre Diamond
+                </p>
+              </div>
+              <span className="font-script text-2xl text-[#17242c]/60">Balanced elegance</span>
             </div>
 
-            {/* Interactive Jewelry Canvas */}
-            <div className="w-full py-4 flex items-center justify-center">
+            <input
+              type="range"
+              min={0.5}
+              max={2.0}
+              step={0.1}
+              value={carat}
+              onChange={(e) => setCarat(parseFloat(e.target.value))}
+              className="w-full mt-8 accent-[#4d3023] cursor-pointer"
+              aria-label="Centre diamond carat weight"
+            />
+            <div className="flex justify-between font-sans text-[10px] uppercase tracking-wider text-[#69635d] mt-2">
+              <span>0.5 ct</span>
+              <span>1.0 ct · Classic choice</span>
+              <span>2.0 ct</span>
+            </div>
+          </div>
+
+          <p className="font-sans text-[11px] text-[#17242c]/50 mt-4 flex items-start gap-2 leading-relaxed">
+            <Info size={13} className="text-[#69635d] shrink-0 mt-0.5" />
+            Every carat weight is hand-selected by the maker. 1.0ct is the balanced, signature
+            PARISSA expression.
+          </p>
+
+          <div className="pt-10 flex items-center justify-between border-t border-[#d4cbc1] mt-12">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all cursor-pointer group shadow-sm"
+            >
+              <span>Next</span>
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============ SUB-STEP 06 · SUMMARY ============ */}
+      {subStep === 6 && (
+        <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 sm:py-14 animate-fadeIn">
+          <p className="font-sans text-[11px] uppercase tracking-[0.3em] text-[#69635d] font-semibold">
+            Your Craft
+          </p>
+          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-light text-[#17242c] mt-2 leading-tight">
+            A quiet close, perfectly yours.
+          </h2>
+
+          {/* Live mini canvas + summary grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 mt-10">
+            <div className="sm:col-span-4 bg-[#eee6dd] border border-[#d4cbc1] rounded-2xl p-5 flex flex-col items-center justify-center">
               <JewelryCanvas
                 shape={shape}
                 metal={metal}
@@ -98,328 +519,147 @@ export const Step04Craft: React.FC<Step04Props> = ({
                 essenceGem={essenceArchetype.essenceGem}
                 intentionGem={intentionOutcome.intentionGem}
                 showHiddenGems={true}
-                className="w-full max-w-[340px] aspect-square"
+                className="w-full max-w-[200px] aspect-square"
               />
+              <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d] mt-1">
+                {shapeInfo.name} · {metalInfo.name}
+              </p>
             </div>
 
-            {/* Hidden Talisman Duo Breakdown */}
-            <div className="w-full bg-[#FAF8F5] border border-[#1A1A1A]/10 p-5 rounded-sm">
-              <div className="flex items-center justify-between text-[10px] font-sans uppercase tracking-[0.2em] font-semibold text-[#1A1A1A] mb-3">
-                <span>Secret Inner Shank Setting</span>
-                <span className="text-xs font-serif">✦ North Star Hallmark</span>
+            <div className="sm:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-5 bg-[#eee6dd]/50 border border-[#d4cbc1] rounded-xl">
+                <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                  Shape
+                </p>
+                <p className="font-serif-luxury text-xl text-[#17242c] mt-1">{shapeInfo.name}</p>
+                <p className="font-serif text-xs italic text-[#17242c]/60">{shapeInfo.title}</p>
+              </div>
+              <div className="p-5 bg-[#eee6dd]/50 border border-[#d4cbc1] rounded-xl">
+                <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                  Setting
+                </p>
+                <p className="font-serif-luxury text-xl text-[#17242c] mt-1">
+                  {collectionInfo.name}
+                </p>
+                <p className="font-serif text-xs italic text-[#17242c]/60">
+                  {collectionInfo.tagline}
+                </p>
+              </div>
+              <div className="p-5 bg-[#eee6dd]/50 border border-[#d4cbc1] rounded-xl">
+                <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                  Metal
+                </p>
+                <p className="font-serif-luxury text-xl text-[#17242c] mt-1">{metalInfo.name}</p>
+                <p className="font-serif text-xs italic text-[#17242c]/60">
+                  {metalInfo.subtitle}
+                </p>
+              </div>
+              <div className="p-5 bg-[#eee6dd]/50 border border-[#d4cbc1] rounded-xl">
+                <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                  Size
+                </p>
+                <p className="font-serif-luxury text-xl text-[#17242c] mt-1">{carat.toFixed(1)} ct</p>
+                <p className="font-serif text-xs italic text-[#17242c]/60">
+                  {diamondType === 'natural' ? 'Natural Diamond' : 'Lab-Grown Diamond'}
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-left">
-                {/* Left: Essence Gem */}
-                <div className="flex items-center gap-3 p-2 bg-[#E8E4D9]/30 rounded">
-                  <div
-                    className="w-6 h-6 rounded-full flex-shrink-0 border border-[#FFFFFF] shadow-sm"
-                    style={{ backgroundColor: essenceArchetype.essenceGem.hex }}
-                  />
+              {/* Ring size + band width + origin (preserved config fields) */}
+              <div className="sm:col-span-2 p-5 bg-[#eee6dd]/50 border border-[#d4cbc1] rounded-xl">
+                <div className="flex items-center justify-between gap-3">
                   <div>
-                    <span className="font-serif-luxury text-xs font-semibold block text-[#1A1A1A]">
-                      {essenceArchetype.essenceGem.name}
-                    </span>
-                    <span className="font-sans text-[9px] uppercase tracking-wider text-[#1A1A1A]/50">
-                      Essence • {essenceArchetype.sign}
-                    </span>
+                    <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                      Your Size
+                    </p>
+                    <select
+                      value={ringSize}
+                      onChange={(e) => setRingSize(parseFloat(e.target.value))}
+                      className="mt-2 bg-[#f7f3ed] border border-[#d4cbc1] rounded px-3 py-2 text-sm font-mono text-[#17242c] cursor-pointer"
+                    >
+                      {ringSizes.map((sz) => (
+                        <option key={sz} value={sz}>
+                          US {sz.toFixed(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                      Band
+                    </p>
+                    <div className="flex flex-col gap-1 mt-2">
+                      {(['delicate', 'classic', 'substantial'] as BandWidth[]).map((bw) => (
+                        <button
+                          key={bw}
+                          type="button"
+                          onClick={() => setBandWidth(bw)}
+                          className={`text-[10px] font-sans uppercase tracking-wider rounded-full px-3 py-1 border transition-all cursor-pointer capitalize ${
+                            bandWidth === bw
+                              ? 'bg-[#13292a] text-[#f7f3ed] border-[#13292a]'
+                              : 'bg-transparent text-[#17242c]/55 border-[#d4cbc1]'
+                          }`}
+                        >
+                          {bw}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Right: Intention Gem */}
-                <div className="flex items-center gap-3 p-2 bg-[#E8E4D9]/30 rounded">
-                  <div
-                    className="w-6 h-6 rounded-full flex-shrink-0 border border-[#FFFFFF] shadow-sm"
-                    style={{ backgroundColor: intentionOutcome.intentionGem.hex }}
-                  />
-                  <div>
-                    <span className="font-serif-luxury text-xs font-semibold block text-[#1A1A1A]">
-                      {intentionOutcome.intentionGem.name}
-                    </span>
-                    <span className="font-sans text-[9px] uppercase tracking-wider text-[#1A1A1A]/50">
-                      Intention • {intentionOutcome.theme.split(' ')[0]}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#d4cbc1]">
+                  <span className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#69635d]">
+                    Origin:
+                  </span>
+                  {(['natural', 'lab-grown'] as DiamondType[]).map((dt) => (
+                    <button
+                      key={dt}
+                      type="button"
+                      onClick={() => setDiamondType(dt)}
+                      className={`text-[10px] font-sans uppercase tracking-wider rounded-full px-3 py-1 border transition-all cursor-pointer ${
+                        diamondType === dt
+                          ? 'bg-[#4d3023] text-[#f7f3ed] border-[#4d3023]'
+                          : 'bg-transparent text-[#17242c]/55 border-[#d4cbc1]'
+                      }`}
+                    >
+                      {dt === 'natural' ? 'Natural' : 'Lab-Grown'}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
-
-            {/* Price Pending & Lead Time Notice per Brief V2 */}
-            <div className="w-full pt-4 mt-4 border-t border-[#1A1A1A]/10 flex items-center justify-between text-xs font-sans">
-              <div className="text-left">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/50 block">Investment</span>
-                <PriceDisplay className="font-mono text-sm font-semibold text-[#1A1A1A] tracking-wider" />
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/50 block">Atelier Timeline</span>
-                <span className="text-xs font-serif italic text-[#1A1A1A]/80">4–6 Weeks Handcrafted</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Configuration Controls */}
-        <div className="lg:col-span-6 space-y-8">
-          <div>
-            <span className="font-sans text-xs uppercase tracking-[0.3em] font-bold text-[#1A1A1A]/60 block mb-2">
-              Master Atelier Specifications
-            </span>
-            <h2 className="font-serif-luxury text-3xl sm:text-4xl font-light text-[#1A1A1A]">
-              Personalize Your Setting
-            </h2>
           </div>
 
-          {/* 1. Signature Collection Selection (Asset Brief 03 Aug) */}
-          <div>
-            <label className="block font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A] mb-3">
-              Setting Architecture
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {(Object.keys(COLLECTIONS) as CollectionName[]).map((colKey) => {
-                const colInfo = COLLECTIONS[colKey];
-                const isSelected = collection === colKey;
-                return (
-                  <button
-                    key={colKey}
-                    type="button"
-                    onClick={() => setCollection(colKey)}
-                    className={`p-4 rounded text-left border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#E8E4D9] border-[#1A1A1A] shadow-sm'
-                        : 'bg-[#FAF8F5] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40'
-                    }`}
-                  >
-                    <span className="font-serif-luxury text-lg font-medium text-[#1A1A1A] block">
-                      {colInfo.name}
-                    </span>
-                    <span className="font-sans text-[10px] text-[#1A1A1A]/60 line-clamp-1 mt-0.5">
-                      {colInfo.tagline}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. Shape (Round, Oval, Marquise) */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A]">
-                Diamond Shape
-              </label>
-              <span className="font-sans text-[11px] text-[#1A1A1A]/50">Selected in Step 01</span>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {(['round', 'oval', 'marquise'] as DiamondShape[]).map((s) => {
-                const isSelected = shape === s;
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setShape(s)}
-                    className={`py-3 px-4 rounded text-xs font-sans uppercase tracking-[0.15em] border transition-all cursor-pointer text-center font-medium ${
-                      isSelected
-                        ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                        : 'bg-[#FAF8F5] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]'
-                    }`}
-                  >
-                    {DIAMOND_SHAPES[s].name.replace(' Brilliant', '')}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 3. Diamond Origin: Natural vs Lab-Grown */}
-          <div>
-            <label className="block font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A] mb-3">
-              Diamond Origin
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setDiamondType('natural')}
-                className={`p-4 rounded border text-left transition-all cursor-pointer ${
-                  diamondType === 'natural'
-                    ? 'bg-[#E8E4D9] border-[#1A1A1A] shadow-sm'
-                    : 'bg-[#FAF8F5] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40'
-                }`}
-              >
-                <span className="font-serif-luxury text-lg font-medium text-[#1A1A1A] block">
-                  Natural Diamond
-                </span>
-                <span className="font-sans text-[10px] text-[#1A1A1A]/60">
-                  Billions of years old • GIA Certified
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setDiamondType('lab-grown')}
-                className={`p-4 rounded border text-left transition-all cursor-pointer ${
-                  diamondType === 'lab-grown'
-                    ? 'bg-[#E8E4D9] border-[#1A1A1A] shadow-sm'
-                    : 'bg-[#FAF8F5] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40'
-                }`}
-              >
-                <span className="font-serif-luxury text-lg font-medium text-[#1A1A1A] block">
-                  Lab-Grown Diamond
-                </span>
-                <span className="font-sans text-[10px] text-[#1A1A1A]/60">
-                  Optically & chemically identical • IGI Certified
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* 4. Carat Weight */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A]">
-                Centre Diamond Carat
-              </label>
-              <span className="font-mono text-xs font-semibold text-[#1A1A1A]">{carat.toFixed(1)} Carat</span>
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {carats.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCarat(c)}
-                  className={`py-3 rounded text-xs font-mono font-medium border transition-all cursor-pointer text-center ${
-                    carat === c
-                      ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                      : 'bg-[#FAF8F5] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]'
-                  }`}
-                >
-                  {c.toFixed(1)} ct
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 5. Precious Metal Alloy */}
-          <div>
-            <label className="block font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A] mb-3">
-              Noble Metal Alloy
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {(Object.keys(METALS) as MetalType[]).map((mKey) => {
-                const metalInfo = METALS[mKey];
-                const isSelected = metal === mKey;
-                return (
-                  <button
-                    key={mKey}
-                    type="button"
-                    onClick={() => setMetal(mKey)}
-                    className={`p-3 rounded border text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#E8E4D9] border-[#1A1A1A] shadow-sm ring-1 ring-[#1A1A1A]'
-                        : 'bg-[#FAF8F5] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40'
-                    }`}
-                  >
-                    <div
-                      className="w-5 h-5 rounded-full mb-2 border border-[#1A1A1A]/20"
-                      style={{ backgroundColor: metalInfo.hex }}
-                    />
-                    <span className="font-serif-luxury text-sm font-medium text-[#1A1A1A] block">
-                      {metalInfo.name}
-                    </span>
-                    <span className="font-sans text-[9px] uppercase tracking-wider text-[#1A1A1A]/50">
-                      {metalInfo.subtitle}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 6. Ring Size & Band Width */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Guild notice */}
+          <div className="mt-8 bg-[#eee6dd] border border-[#d4cbc1] rounded-xl p-5 flex items-center justify-between gap-4">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A]">
-                  Ring Size (US)
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowSizerModal(true)}
-                  className="text-[10px] font-sans text-[#1A1A1A]/60 hover:text-[#1A1A1A] underline cursor-pointer flex items-center gap-1"
-                >
-                  <Info className="w-3 h-3" />
-                  <span>Size Guide</span>
-                </button>
-              </div>
-              <select
-                value={ringSize}
-                onChange={(e) => setRingSize(parseFloat(e.target.value))}
-                className="w-full p-3 bg-[#FAF8F5] border border-[#1A1A1A]/20 rounded text-sm text-[#1A1A1A] font-mono cursor-pointer"
-              >
-                {ringSizes.map((sz) => (
-                  <option key={sz} value={sz}>
-                    US {sz.toFixed(1)}
-                  </option>
-                ))}
-              </select>
+              <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#69635d]">
+                Ironclad price promise
+              </p>
+              <p className="font-serif text-sm text-[#17242c]/70 mt-1">
+                Fixed, transparent pricing. No surprises — every PARISSA stone in your chosen grade
+                is available at this size.
+              </p>
             </div>
-
-            <div>
-              <label className="block font-sans text-xs uppercase tracking-[0.2em] font-semibold text-[#1A1A1A] mb-2">
-                Band Width
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['delicate', 'classic', 'substantial'] as BandWidth[]).map((bw) => (
-                  <button
-                    key={bw}
-                    type="button"
-                    onClick={() => setBandWidth(bw)}
-                    className={`py-3 text-[10px] font-sans uppercase tracking-wider rounded border transition-all cursor-pointer capitalize ${
-                      bandWidth === bw
-                        ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                        : 'bg-[#FAF8F5] text-[#1A1A1A] border-[#1A1A1A]/15 hover:border-[#1A1A1A]'
-                    }`}
-                  >
-                    {bw}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <NorthStarIcon size={20} className="text-[#c9a15a] shrink-0" />
           </div>
 
-          {/* Proceed to Reveal */}
-          <div className="pt-6 border-t border-[#1A1A1A]/10">
+          <div className="pt-8 mt-8 flex items-center justify-between border-t border-[#d4cbc1]">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+            >
+              <ArrowLeft size={13} />
+              <span>Back</span>
+            </button>
             <button
               type="button"
               onClick={handleProceed}
-              className="w-full py-4 bg-[#1A1A1A] text-[#F9F7F2] rounded-full text-xs font-sans uppercase tracking-[0.25em] font-medium hover:bg-[#1A1A1A]/90 transition-all flex items-center justify-center gap-3 cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.25em] font-medium transition-all shadow-sm cursor-pointer group"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Complete Configuration & Reveal My Story (Step 05)</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Sizer Guidance Modal */}
-      {showSizerModal && (
-        <div className="fixed inset-0 z-50 bg-[#1A1A1A]/50 backdrop-blur-sm flex items-center justify-center p-6 animate-fadeIn">
-          <div className="bg-[#FAF8F5] border border-[#1A1A1A]/20 p-8 max-w-md w-full rounded shadow-xl">
-            <h3 className="font-serif-luxury text-2xl text-[#1A1A1A] mb-2">
-              Complimentary PARISSA Ring Sizer
-            </h3>
-            <p className="font-sans text-xs text-[#1A1A1A]/70 mb-4 leading-relaxed">
-              Every PARISSA ring is handcrafted to your exact fractional millimetre. If you are unsure of your ring size, you can place your reservation and our Melbourne atelier will express courier a physical sizing gauge directly to your home before casting your ring.
-            </p>
-            <div className="p-3 bg-[#E8E4D9]/50 rounded text-xs font-serif italic text-[#1A1A1A]/80 mb-6">
-              "We provide one complimentary resizing within the first 12 months of purchase."
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowSizerModal(false)}
-              className="w-full py-3 bg-[#1A1A1A] text-[#F9F7F2] rounded-full text-xs font-sans uppercase tracking-[0.2em]"
-            >
-              Close Guidance
+              <Sparkles size={14} />
+              <span>Continue to Reveal</span>
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         </div>

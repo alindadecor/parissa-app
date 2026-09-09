@@ -21,6 +21,11 @@ import {
 } from 'lucide-react';
 import { NorthStarIcon } from './GemIcon';
 
+const WH_IMAGE =
+  'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/wh.png?v=1788934365';
+const RUBY_IMAGE =
+  'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/Ruby.png?v=1788934367';
+
 interface Step02Props {
   initialBirthData?: {
     date: string;
@@ -338,25 +343,23 @@ export const Step02Essence: React.FC<Step02Props> = ({
 
           {/* Right Column: Editorial Atmosphere Archway Visual */}
           <div className="lg:col-span-6 flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-md lg:max-w-lg aspect-[3/4] rounded-2xl overflow-hidden shadow-sm border border-[#1A1A1A]/10 bg-gradient-to-b from-[#FAF8F5] via-[#EAE6DD] to-[#DDD7CA] flex flex-col justify-between p-8 group">
-              <div className="flex justify-between items-start">
-                <span className="font-sans text-[10px] uppercase tracking-[0.3em] text-[#1A1A1A]/40 font-medium">
-                  Celestial Arch
+            <div className="relative w-full max-w-md lg:max-w-lg aspect-[3/4] rounded-2xl overflow-hidden shadow-sm border border-[#1A1A1A]/10 bg-gradient-to-b from-[#FAF8F5] via-[#EAE6DD] to-[#DDD7CA] p-8 flex flex-col justify-between group">
+              <img
+                src={WH_IMAGE}
+                alt="Where did your story begin?"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A]/45 via-transparent to-[#1A1A1A]/10 pointer-events-none" />
+              <div className="flex justify-between items-start relative z-[1]">
+                <span className="font-sans text-[10px] uppercase tracking-[0.3em] text-white/85 font-medium">
+                  Where it all began
                 </span>
-                <NorthStarIcon className="w-5 h-5 text-[#1A1A1A]/40" />
-              </div>
-
-              {/* Decorative Arch Silhouette */}
-              <div className="mx-auto w-48 h-64 border-t border-x border-[#1A1A1A]/15 rounded-t-full flex items-center justify-center relative">
-                <div className="w-36 h-52 border-t border-x border-[#1A1A1A]/10 rounded-t-full flex items-center justify-center">
-                  <div className="w-8 h-8 rounded-full border border-[#1A1A1A]/20 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-[#1A1A1A]/30" />
-                  </div>
-                </div>
+                <NorthStarIcon className="w-5 h-5 text-white/85" />
               </div>
 
               {/* Inscription Overlay at bottom right */}
-              <div className="text-right text-[#1A1A1A]/80 select-none">
+              <div className="text-right text-white/95 select-none relative z-[1]">
                 <p className="font-serif-luxury text-sm sm:text-base tracking-[0.18em] leading-relaxed uppercase font-light">
                   SOME THINGS <br />
                   FIND YOU. <br />
@@ -616,7 +619,20 @@ export const Step02Essence: React.FC<Step02Props> = ({
               {/* Left: Gemstone Visual Spotlight */}
               <div className="md:col-span-5 flex justify-center">
                 <div className="relative group">
-                  {/* Faceted gem orb visual with ambient reflections */}
+                  {/* Real gem imagery when available; faceted orb otherwise */}
+                  {activeArchetype.essenceGem.name === 'Ruby' ? (
+                    <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-[#F9F7F2] to-[#EAE6DD] border border-[#1A1A1A]/10 flex items-center justify-center shadow-md overflow-hidden">
+                      <img
+                        src={RUBY_IMAGE}
+                        alt="Ruby essence gem"
+                        className="w-full h-full object-cover rounded-2xl"
+                        loading="lazy"
+                      />
+                      <div className="absolute top-3 right-3 text-white drop-shadow">
+                        <NorthStarIcon size={16} />
+                      </div>
+                    </div>
+                  ) : (
                   <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-[#F9F7F2] to-[#EAE6DD] border border-[#1A1A1A]/10 flex items-center justify-center shadow-md">
                     <div
                       className="w-28 h-28 sm:w-32 sm:h-32 rounded-full shadow-lg flex items-center justify-center border-4 border-white transition-transform duration-500 group-hover:scale-105"
@@ -632,6 +648,7 @@ export const Step02Essence: React.FC<Step02Props> = ({
                       <NorthStarIcon size={16} />
                     </div>
                   </div>
+                  )}
 
                   <div className="absolute -bottom-2.5 -right-2.5 bg-[#FAF8F5] border border-[#1A1A1A]/10 px-2.5 py-1 rounded-full text-[10px] font-sans uppercase tracking-widest text-[#1A1A1A]/60 shadow-xs">
                     Talisman

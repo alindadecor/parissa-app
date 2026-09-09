@@ -121,6 +121,7 @@ export interface ProductListing {
   metalDefault: MetalType;
   storyExcerpt: string;
   priceDisplay?: string;
+  imageUrl?: string;
 }
 
 export interface CartItem {

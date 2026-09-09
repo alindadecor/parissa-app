@@ -71,6 +71,7 @@ export function toProductListing(
     metalDefault,
     storyExcerpt: p.description || '',
     priceDisplay,
+    imageUrl: p.featuredImage?.url || p.images?.[0]?.url || undefined,
   };
 }
 

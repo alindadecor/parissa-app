@@ -5,6 +5,12 @@ import { useShopifyProducts } from '../hooks/useShopifyProducts';
 import { JewelryCanvas } from './JewelryCanvas';
 import { ArrowRight, Sparkles, Filter, Eye, Loader2 } from 'lucide-react';
 
+const SHAPE_IMG_FALLBACK: Record<DiamondShape, string> = {
+  round: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/round.png?v=1788934646',
+  oval: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/oval.png?v=1788934646',
+  marquise: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/marquise.png?v=1788934645',
+};
+
 interface ExploreRingsProps {
   onPersonalizeRing: (product: ProductListing) => void;
   onOpenProductDetail: (product: ProductListing) => void;
@@ -156,18 +162,27 @@ export const ExploreRings: React.FC<ExploreRingsProps> = ({
                   ✦
                 </div>
 
-                <JewelryCanvas
-                  shape={prod.shape}
-                  metal={prod.metalDefault}
-                  carat={prod.carat}
-                  essenceGem={gem}
-                  intentionGem={intentionGem}
-                  showHiddenGems={true}
-                  className="w-full max-w-[220px] aspect-square group-hover:scale-105 transition-transform duration-500"
-                />
+                {prod.imageUrl ? (
+                  <img
+                    src={prod.imageUrl}
+                    alt={prod.name}
+                    loading="lazy"
+                    className="w-full max-w-[220px] aspect-square object-cover rounded-sm group-hover:scale-105 transition-transform duration-500 shadow-sm"
+                  />
+                ) : (
+                  <JewelryCanvas
+                    shape={prod.shape}
+                    metal={prod.metalDefault}
+                    carat={prod.carat}
+                    essenceGem={gem}
+                    intentionGem={intentionGem}
+                    showHiddenGems={true}
+                    className="w-full max-w-[220px] aspect-square group-hover:scale-105 transition-transform duration-500"
+                  />
+                )}
 
                 <div className="absolute bottom-3 left-0 w-full text-center text-[10px] font-sans uppercase tracking-[0.2em] text-[#1A1A1A]/40">
-                  Includes Hidden Talisman Bridge
+                  {prod.imageUrl ? 'Includes Hidden Talisman Bridge' : `Model: ${prod.shape}`}
                 </div>
               </div>
 

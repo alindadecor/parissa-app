@@ -5,7 +5,17 @@ import {
   INTENTION_OUTCOMES,
   calculateIntentionOutcome,
 } from '../data/parissaData';
-import { ArrowRight, ArrowLeft, Check, Sparkles, RotateCcw, Info } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  RotateCcw,
+  Info,
+  Gem,
+  Sparkles,
+  Hand,
+  HeartHandshake,
+} from 'lucide-react';
 import { NorthStarIcon } from './GemIcon';
 
 interface Step03Props {
@@ -13,6 +23,14 @@ interface Step03Props {
   onComplete: (intention: IntentionOutcome) => void;
   onBack: () => void;
 }
+
+const JOURNEY_STEPS = [
+  { num: 1, label: 'Place & Shape' },
+  { num: 2, label: 'Essence' },
+  { num: 3, label: 'Intention' },
+  { num: 4, label: 'Craft' },
+  { num: 5, label: 'Reveal' },
+];
 
 export const Step03Intention: React.FC<Step03Props> = ({
   initialIntention,
@@ -101,381 +119,465 @@ export const Step03Intention: React.FC<Step03Props> = ({
     }
   };
 
+  const gemKeywords = activeOutcome.intentionGem.meaning
+    .replace(/\./g, '')
+    .split(',')
+    .map((s) => s.trim().replace(/^and\s+/i, '').toUpperCase())
+    .filter(Boolean)
+    .join(' · ');
+
+  const gemBenefits = [
+    { icon: Gem, label: 'A conscious talisman' },
+    { icon: Sparkles, label: 'Cut for inner light' },
+    { icon: Hand, label: 'Set by hand' },
+    { icon: HeartHandshake, label: 'Yours to choose' },
+  ];
+
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-[#F9F7F2] text-[#1A1A1A] flex flex-col">
-      {/* Top Stepper Bar */}
-      <div className="border-b border-[#1A1A1A]/10 bg-[#FAF8F5]/80 px-6 sm:px-12 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-xs font-sans">
-          <div className="flex items-center gap-6 sm:gap-10">
-            <span className="font-semibold uppercase tracking-[0.22em] text-[#1A1A1A]">
-              03 / 05 &nbsp;INTENTION
-            </span>
-            <div className="hidden md:flex items-center gap-6 text-[#1A1A1A]/40 uppercase tracking-[0.2em]">
-              <span className="text-[#1A1A1A]/70">01</span>
-              <span className="text-[#1A1A1A]/70">02</span>
-              <NorthStarIcon size={12} className="text-[#1A1A1A]" />
-              <span>04</span>
-              <span>05</span>
-            </div>
+    <div className="min-h-[100dvh] bg-[#f7f3ed] text-[#17242c] lg:grid lg:grid-cols-[minmax(280px,340px)_1fr]">
+      {/* ============ LEFT SIDEBAR (desktop only) ============ */}
+      <aside className="hidden lg:flex flex-col justify-between bg-[#13292a] text-[#f7f3ed] px-10 py-10 lg:sticky lg:top-20 lg:self-start lg:h-[calc(100dvh-80px)]">
+        <div className="space-y-12">
+          {/* PARISSA Logo + tagline */}
+          <div>
+            <p className="font-serif-luxury text-3xl font-light tracking-wide text-[#f7f3ed]">
+              PARISSA
+            </p>
+            <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-[#c9a15a] mt-2">
+              A Brighter You
+            </p>
           </div>
 
-          <button
-            onClick={reflectionIndex === 5 ? () => setReflectionIndex(4) : handlePrev}
-            className="text-xs uppercase tracking-[0.2em] text-[#1A1A1A]/50 hover:text-[#1A1A1A] transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <ArrowLeft size={13} />
-            <span>
-              {reflectionIndex === 0
-                ? 'Back to Essence'
-                : reflectionIndex === 5
-                ? 'Back to Questions'
-                : `Back to 0${reflectionIndex}`}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {reflectionIndex < 5 ? (
-        /* ================= QUIZ VIEW (Q1 to Q5) =================
-           Strict UI Locking:
-           - NO Intention Gem
-           - NO Gem name
-           - NO scores / points
-           - NO scoring categories (e.g. Love, Growth, Clarity)
-           - NO hint about which gem will be given
-        =========================================================== */
-        <div className="flex-1 max-w-4xl mx-auto w-full px-6 py-10 sm:py-16 flex flex-col justify-between animate-fadeIn">
-          <div className="space-y-8">
-            {/* Progress Segmented Bar */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs font-sans">
-                <span className="uppercase tracking-[0.25em] text-[#1A1A1A]/60 font-semibold">
-                  0{reflectionIndex + 1} / 05 &nbsp;·&nbsp; {currentDimension.code}
-                </span>
-                <span className="border border-[#1A1A1A]/20 bg-[#FAF8F5] px-3 py-1 rounded-full text-[11px] uppercase tracking-wider text-[#1A1A1A]/70 font-medium">
-                  เลือก 1 ข้อ
-                </span>
-              </div>
-
-              {/* 5 Segment Progress Bars */}
-              <div className="grid grid-cols-5 gap-2">
-                {[0, 1, 2, 3, 4].map((step) => (
-                  <div
-                    key={step}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      step === reflectionIndex
-                        ? 'bg-[#1A1A1A]'
-                        : step < reflectionIndex
-                        ? 'bg-[#1A1A1A]/50'
-                        : 'bg-[#1A1A1A]/10'
+          {/* Vertical Step List */}
+          <nav className="space-y-1">
+            {JOURNEY_STEPS.map((step) => {
+              const isActive = step.num === 3;
+              const isDone = step.num < 3;
+              return (
+                <div
+                  key={step.num}
+                  className={`flex items-center gap-4 py-3 border-b border-[#f7f3ed]/10 ${
+                    isActive ? 'text-[#f7f3ed]' : isDone ? 'text-[#f7f3ed]/55' : 'text-[#f7f3ed]/30'
+                  }`}
+                >
+                  <span
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-sans border shrink-0 ${
+                      isActive
+                        ? 'bg-[#c9a15a] border-[#c9a15a] text-[#13292a] font-semibold'
+                        : isDone
+                        ? 'border-[#f7f3ed]/40 text-[#f7f3ed]/70'
+                        : 'border-[#f7f3ed]/20 text-[#f7f3ed]/40'
                     }`}
-                  />
+                  >
+                    {isDone ? '✓' : `0${step.num}`}
+                  </span>
+                  <span className="font-sans text-xs uppercase tracking-[0.22em]">
+                    {step.label}
+                  </span>
+                  {isActive && <NorthStarIcon size={13} className="ml-auto text-[#c9a15a]" />}
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="space-y-6">
+          {/* Pull Quote */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-[#c9a15a]">
+              {[0, 1, 2, 3].map((i) => (
+                <span key={i} className="text-[8px]">
+                  ✦
+                </span>
+              ))}
+            </div>
+            <blockquote className="font-serif-luxury text-2xl font-light leading-snug text-[#f7f3ed]">
+              A deeper you creates a brighter tomorrow.
+            </blockquote>
+          </div>
+
+          {/* Sidebar Footer */}
+          <p className="font-sans text-[9px] uppercase tracking-[0.3em] text-[#f7f3ed]/40">
+            Fine Jewellery for a More Meaningful You
+          </p>
+        </div>
+      </aside>
+
+      {/* ============ RIGHT CONTENT ============ */}
+      <div className="min-w-0">
+        {/* Content Top Bar */}
+        <div className="border-b border-[#d4cbc1] bg-[#f7f3ed] px-6 sm:px-10 py-4">
+          <div className="max-w-3xl mx-auto flex items-center justify-between text-xs font-sans">
+            <div className="flex items-center gap-6 sm:gap-10">
+              <span className="font-semibold uppercase tracking-[0.22em] text-[#17242c]">
+                03 / 05 <span className="ml-1 text-[#c9a15a]">INTENTION</span>
+              </span>
+              <div className="hidden md:flex items-center gap-5 text-[#17242c]/40 uppercase tracking-[0.18em]">
+                {JOURNEY_STEPS.map((s) => (
+                  <span key={s.num} className={s.num === 3 ? 'text-[#17242c] font-semibold' : ''}>
+                    {`0${s.num}`}
+                  </span>
                 ))}
               </div>
             </div>
 
-            {/* Question Header */}
-            <div className="space-y-3 pt-2">
-              <h1 className="font-serif-luxury text-3xl sm:text-4xl lg:text-[42px] font-light text-[#1A1A1A] leading-tight">
-                {currentDimension.question}
-              </h1>
-
-              {/* Helper text */}
-              <div className="bg-[#FAF8F5] border border-[#1A1A1A]/10 rounded-xl p-4 sm:p-5 flex items-start gap-3">
-                <Info size={16} className="text-[#1A1A1A]/40 shrink-0 mt-0.5" />
-                <p className="font-sans text-xs sm:text-sm text-[#1A1A1A]/75 font-light leading-relaxed">
-                  <strong className="font-semibold text-[#1A1A1A]">Helper:</strong>{' '}
-                  {getHelperText(reflectionIndex)}
-                </p>
-              </div>
-            </div>
-
-            {/* 4 Reflection Options (Strictly text only, no gems, no scoring categories) */}
-            <div className="space-y-3 pt-2">
-              {currentDimension.options.map((option) => {
-                const isSelected = currentSelectedOptionId === option.id;
-
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => handleSelectOption(option.id)}
-                    className={`w-full text-left p-5 sm:p-6 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-4 group ${
-                      isSelected
-                        ? 'bg-[#FAF8F5] border-[#1A1A1A] ring-2 ring-[#1A1A1A] shadow-xs'
-                        : 'bg-[#FAF8F5] border-[#1A1A1A]/15 hover:border-[#1A1A1A]/50 hover:bg-[#FAF8F5]/90'
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Selection Radio Circle */}
-                      <span
-                        className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-sans shrink-0 mt-0.5 transition-colors ${
-                          isSelected
-                            ? 'border-[#1A1A1A] bg-[#1A1A1A] text-[#FAF8F5]'
-                            : 'border-[#1A1A1A]/30 bg-transparent text-[#1A1A1A]/50 group-hover:border-[#1A1A1A]/60'
-                        }`}
-                      >
-                        {isSelected ? <Check size={13} strokeWidth={2.5} /> : option.letter}
-                      </span>
-
-                      {/* Option Text */}
-                      <p
-                        className={`font-serif text-lg sm:text-xl leading-snug transition-colors ${
-                          isSelected
-                            ? 'text-[#1A1A1A] font-medium'
-                            : 'text-[#1A1A1A]/90 group-hover:text-[#1A1A1A]'
-                        }`}
-                      >
-                        {option.label}
-                      </p>
-                    </div>
-
-                    <span
-                      className={`text-xs uppercase tracking-widest font-sans transition-opacity shrink-0 pt-1 ${
-                        isSelected
-                          ? 'text-[#1A1A1A] font-semibold opacity-100'
-                          : 'text-[#1A1A1A]/30 opacity-0 group-hover:opacity-100'
-                      }`}
-                    >
-                      {isSelected ? 'Selected' : 'Select'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Bottom Actions */}
-          <div className="pt-10 flex items-center justify-between border-t border-[#1A1A1A]/10 mt-10">
             <button
-              type="button"
-              onClick={handlePrev}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#1A1A1A]/20 text-xs font-sans uppercase tracking-[0.2em] text-[#1A1A1A]/70 hover:text-[#1A1A1A] hover:border-[#1A1A1A] transition-all cursor-pointer"
+              onClick={reflectionIndex === 5 ? () => setReflectionIndex(4) : handlePrev}
+              className="text-xs uppercase tracking-[0.2em] text-[#17242c]/50 hover:text-[#17242c] transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <ArrowLeft size={13} />
-              <span>Back</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={!currentSelectedOptionId}
-              className={`inline-flex items-center gap-3 px-8 py-3.5 rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all cursor-pointer group shadow-sm ${
-                currentSelectedOptionId
-                  ? 'bg-[#4A3B32] hover:bg-[#1A1A1A] text-[#FAF8F5]'
-                  : 'bg-[#1A1A1A]/20 text-[#1A1A1A]/40 cursor-not-allowed'
-              }`}
-            >
-              <span>{reflectionIndex === 4 ? 'Complete & Reveal' : 'Continue'}</span>
-              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              <span>
+                {reflectionIndex === 0
+                  ? 'Back to Essence'
+                  : reflectionIndex === 5
+                  ? 'Back to Questions'
+                  : `Back to 0${reflectionIndex}`}
+              </span>
             </button>
           </div>
         </div>
-      ) : (
-        /* ================= REVEAL VIEW (AFTER Q5) =================
-           Mandated in Brief:
-           - Your Intention: [Recommended Intention]
-           - Your Intention Gem: [Gem]
-           - "One recommendation. Full permission to choose differently."
-           - Disclaimer: "Symbolic reflection, not prediction. ไม่ใช่ psychological test หรือคำทำนาย"
-           - Option to choose differently from the 8 intention gems
-        ============================================================= */
-        <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-10 sm:py-16 space-y-10 animate-fadeIn">
-          {/* Header Banner with Required Message */}
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="font-sans text-xs uppercase tracking-[0.3em] font-semibold text-[#1A1A1A]/60 block">
-              03 / 05 · Intention Revealed
-            </span>
-            <h1 className="font-serif-luxury text-3xl sm:text-5xl font-light text-[#1A1A1A] leading-tight">
-              One recommendation. Full permission to choose differently.
-            </h1>
-            <p className="font-sans text-xs sm:text-sm text-[#1A1A1A]/70 font-light leading-relaxed">
-              Based on your five reflections, this is the light and inner intention that surfaced.
-              You hold complete freedom to honour this suggestion or choose another stone that calls to you.
-            </p>
-          </div>
 
-          {/* Core Reveal Hero Card */}
-          <div className="bg-[#FAF8F5] border border-[#1A1A1A]/15 rounded-2xl p-6 sm:p-10 lg:p-12 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            {/* Left: Your Intention */}
-            <div className="md:col-span-7 space-y-6">
-              <div className="space-y-2">
-                <span className="font-sans text-xs uppercase tracking-[0.25em] text-[#1A1A1A]/50 font-semibold block">
-                  Your Intention
-                </span>
-                <h2 className="font-serif-luxury text-3xl sm:text-4xl text-[#1A1A1A] font-light">
-                  {activeOutcome.title}
-                </h2>
-                <p className="font-serif italic text-base sm:text-lg text-[#1A1A1A]/80">
-                  "{activeOutcome.affirmation}"
-                </p>
-              </div>
-
-              <div className="space-y-2 border-t border-[#1A1A1A]/10 pt-4">
-                <span className="font-sans text-[11px] uppercase tracking-wider text-[#1A1A1A]/50 font-semibold">
-                  Intention Reflection:
-                </span>
-                <p className="font-serif text-sm sm:text-base text-[#1A1A1A]/80 leading-relaxed">
-                  {activeOutcome.reading}
-                </p>
-              </div>
-
-              {activeOutcome.id !== recommendedOutcome.id && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 text-xs font-sans text-[#1A1A1A]/80">
-                  <span>Chosen by you (Recommendation was: {recommendedOutcome.title})</span>
+        {reflectionIndex < 5 ? (
+          /* ================= QUIZ VIEW (Q1 to Q5) =================
+             Strict UI Locking:
+             - NO Intention Gem
+             - NO Gem name
+             - NO scores / points
+             - NO scoring categories (e.g. Love, Growth, Clarity)
+             - NO hint about which gem will be given
+          =========================================================== */
+          <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-10 sm:py-14 flex flex-col justify-between animate-fadeIn min-h-[calc(100dvh-140px)]">
+            <div className="space-y-8">
+              {/* Progress Segmented Bar */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-sans">
+                  <span className="uppercase tracking-[0.25em] text-[#69635d] font-semibold">
+                    {currentDimension.subtitle.toUpperCase()} <span className="mx-1">·</span>{' '}
+                    {currentDimension.code}
+                  </span>
+                  <span className="border border-[#d4cbc1] bg-[#eee6dd] px-3 py-1 rounded-full text-[11px] uppercase tracking-wider text-[#17242c]/70 font-medium">
+                    Select one
+                  </span>
                 </div>
-              )}
-            </div>
 
-            {/* Right: Your Intention Gem */}
-            <div className="md:col-span-5 bg-[#F9F7F2] border border-[#1A1A1A]/10 rounded-xl p-6 sm:p-8 flex flex-col items-center text-center space-y-4">
-              <span className="font-sans text-xs uppercase tracking-[0.25em] text-[#1A1A1A]/50 font-semibold">
-                Your Intention Gem
-              </span>
-
-              {/* Gem Orb Visual */}
-              <div className="relative">
-                <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full shadow-lg flex items-center justify-center border-4 border-white transition-transform hover:scale-105"
-                  style={{ backgroundColor: activeOutcome.intentionGem.hex }}
-                >
-                  <div
-                    className="w-14 h-14 rounded-full opacity-60 filter blur-[1px]"
-                    style={{ backgroundColor: activeOutcome.intentionGem.accentHex }}
-                  />
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/20 via-transparent to-white/40 pointer-events-none" />
-                </div>
-                <div className="absolute -top-1 -right-1 text-[#1A1A1A]">
-                  <NorthStarIcon size={16} />
+                {/* 5 Segment Progress Bars */}
+                <div className="grid grid-cols-5 gap-2">
+                  {[0, 1, 2, 3, 4].map((step) => (
+                    <div
+                      key={step}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        step === reflectionIndex
+                          ? 'bg-[#13292a]'
+                          : step < reflectionIndex
+                          ? 'bg-[#c9a15a]'
+                          : 'bg-[#d4cbc1]'
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <h3 className="font-serif text-2xl font-medium text-[#1A1A1A]">
-                  {activeOutcome.intentionGem.name}
-                </h3>
-                <p className="font-sans text-xs uppercase tracking-wider text-[#1A1A1A]/60">
-                  {activeOutcome.intentionGem.colorName}
-                </p>
+              {/* Question Header */}
+              <div className="space-y-3 pt-2">
+                <h1 className="font-serif-luxury text-3xl sm:text-4xl lg:text-[42px] font-light text-[#17242c] leading-tight">
+                  {currentDimension.question}
+                </h1>
+
+                {/* Helper text */}
+                <div className="bg-[#eee6dd] border border-[#d4cbc1] rounded-xl p-4 sm:p-5 flex items-start gap-3">
+                  <Info size={16} className="text-[#17242c]/40 shrink-0 mt-0.5" />
+                  <p className="font-sans text-xs sm:text-sm text-[#17242c]/70 font-light leading-relaxed">
+                    <strong className="font-semibold text-[#17242c]">Helper:</strong>{' '}
+                    {getHelperText(reflectionIndex)}
+                  </p>
+                </div>
               </div>
 
-              <p className="font-serif text-xs text-[#1A1A1A]/70 italic leading-relaxed pt-1">
-                {activeOutcome.intentionGem.meaning}
-              </p>
-            </div>
-          </div>
-
-          {/* Mandatory Disclaimer Box */}
-          <div className="bg-[#FAF8F5] border border-[#1A1A1A]/15 rounded-xl p-5 sm:p-6 flex items-start gap-4">
-            <div className="w-8 h-8 rounded-full bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 flex items-center justify-center shrink-0 mt-0.5 text-[#1A1A1A]/70">
-              <Info size={16} />
-            </div>
-            <div className="space-y-1 text-xs sm:text-sm font-sans text-[#1A1A1A]/75 font-light leading-relaxed">
-              <p className="font-semibold text-[#1A1A1A] uppercase tracking-wider text-[11px]">
-                Symbolic Reflection Disclaimer
-              </p>
-              <p>
-                This reflection is a symbolic mirror designed to help anchor your private intention, not a
-                prediction, medical diagnosis, or psychological assessment. You hold total sovereignty over
-                your story and may choose whichever gem reflects your heart.
-              </p>
-              <p className="text-[11px] text-[#1A1A1A]/55 pt-0.5">
-                (การสะท้อนความหมายนี้เป็นเพียงสัญลักษณ์เพื่อช่วยตั้งเจตจำนงส่วนตัว ไม่ใช่การทำนายทายทักหรือการทดสอบทางจิตวิทยา)
-              </p>
-            </div>
-          </div>
-
-          {/* Full Permission to Choose Differently: 8 Approved Intention Gems Palette */}
-          <div className="space-y-4 pt-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1A1A1A]/10 pb-3">
-              <div className="space-y-0.5">
-                <h3 className="font-sans text-xs uppercase tracking-[0.25em] font-semibold text-[#1A1A1A]">
-                  Choose Differently (The 8 Intention Gems)
-                </h3>
-                <p className="font-sans text-xs text-[#1A1A1A]/60 font-light">
-                  If another stone speaks more clearly to your season, select it below.
-                </p>
-              </div>
-              <span className="text-[11px] font-sans uppercase tracking-wider text-[#1A1A1A]/50">
-                8 Approved Gems
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-              {Object.entries(INTENTION_OUTCOMES)
-                .filter(([key]) => key !== 'amethyst') // Only the 8 canonical outcomes per brief
-                .map(([key, outcome]) => {
-                  const isSelected = activeOutcome.id === outcome.id;
-                  const isRecommended = recommendedOutcome.id === outcome.id;
+              {/* 4 Reflection Options (Strictly text only, no gems, no scoring categories) */}
+              <div className="space-y-3 pt-2">
+                {currentDimension.options.map((option) => {
+                  const isSelected = currentSelectedOptionId === option.id;
 
                   return (
                     <button
-                      key={key}
+                      key={option.id}
                       type="button"
-                      onClick={() => setActiveOutcome(outcome)}
-                      className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer relative ${
+                      onClick={() => handleSelectOption(option.id)}
+                      className={`w-full text-left p-5 sm:p-6 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-4 group ${
                         isSelected
-                          ? 'bg-[#FAF8F5] border-[#1A1A1A] ring-2 ring-[#1A1A1A] shadow-xs'
-                          : 'bg-[#FAF8F5]/70 border-[#1A1A1A]/15 hover:border-[#1A1A1A]/40'
+                          ? 'bg-[#eee6dd] border-[#13292a] ring-2 ring-[#13292a]/20 shadow-sm'
+                          : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50 hover:bg-[#eee6dd]'
                       }`}
                     >
-                      {/* Recommendation Badge */}
-                      {isRecommended && (
-                        <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-[#1A1A1A] text-[#FAF8F5] text-[9px] font-sans uppercase tracking-wider font-semibold">
-                          Recommended
+                      <div className="flex items-start gap-4">
+                        {/* Selection Radio Circle */}
+                        <span
+                          className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-sans shrink-0 mt-0.5 transition-colors ${
+                            isSelected
+                              ? 'border-[#4d3023] bg-[#4d3023] text-[#f7f3ed]'
+                              : 'border-[#d4cbc1] bg-transparent text-[#17242c]/50 group-hover:border-[#4d3023]/60'
+                          }`}
+                        >
+                          {isSelected ? <Check size={13} strokeWidth={2.5} /> : option.letter}
                         </span>
-                      )}
 
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-8 h-8 rounded-full shrink-0 border border-white shadow-xs"
-                          style={{ backgroundColor: outcome.intentionGem.hex }}
-                        />
-                        <div className="overflow-hidden">
-                          <span className="font-serif text-sm font-medium text-[#1A1A1A] block truncate">
-                            {outcome.intentionGem.name}
-                          </span>
-                          <span className="font-sans text-[10px] uppercase tracking-wider text-[#1A1A1A]/50 block truncate">
-                            {outcome.title.split('&')[0].trim()}
-                          </span>
-                        </div>
+                        {/* Option Text */}
+                        <p
+                          className={`font-serif text-lg sm:text-xl leading-snug transition-colors ${
+                            isSelected
+                              ? 'text-[#17242c] font-medium'
+                              : 'text-[#17242c]/80 group-hover:text-[#17242c]'
+                          }`}
+                        >
+                          {option.label}
+                        </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] font-sans pt-1 border-t border-[#1A1A1A]/5">
-                        <span className="text-[#1A1A1A]/60 truncate">{outcome.title}</span>
-                        {isSelected && (
-                          <Check size={13} className="text-[#1A1A1A] shrink-0 font-bold" />
-                        )}
-                      </div>
+                      <span
+                        className={`text-xs uppercase tracking-widest font-sans transition-opacity shrink-0 pt-1 ${
+                          isSelected
+                            ? 'text-[#4d3023] font-semibold opacity-100'
+                            : 'text-[#17242c]/30 opacity-0 group-hover:opacity-100'
+                        }`}
+                      >
+                        {isSelected ? 'Selected' : 'Select'}
+                      </span>
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-10 flex items-center justify-between border-t border-[#d4cbc1] mt-10">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+              >
+                <ArrowLeft size={13} />
+                <span>Back</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={!currentSelectedOptionId}
+                className={`inline-flex items-center gap-3 px-8 py-3.5 rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all cursor-pointer group shadow-sm ${
+                  currentSelectedOptionId
+                    ? 'bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed]'
+                    : 'bg-[#d4cbc1] text-[#17242c]/40 cursor-not-allowed'
+                }`}
+              >
+                <span>{reflectionIndex === 4 ? 'Complete & Reveal' : 'Continue'}</span>
+                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              </button>
             </div>
           </div>
+        ) : (
+          /* ================= REVEAL VIEW (AFTER Q5) =================
+             Design spec · Intention screen:
+             - eyebrow "YOUR INTENTION"
+             - h1: activeOutcome.theme (Cormorant Garamond)
+             - body: reading based on reflection result
+             - decorative "SAME QUESTIONS. A BRIGHTER YOU."
+             - Intention Gem card (gem + name + keywords + description + 4 benefits)
+             - handwritten affirmation note
+             - "One recommendation. Full permission to choose differently."
+             - CTAs: Retake Reflections (outlined) + Continue to Craft → (dark primary)
+          ============================================================= */
+          <div className="max-w-3xl mx-auto w-full px-6 py-10 sm:py-14 animate-fadeIn">
+            {/* Eyebrow + decorative */}
+            <div className="flex items-start justify-between gap-4">
+              <span className="font-sans text-xs uppercase tracking-[0.3em] font-semibold text-[#69635d]">
+                Your Intention
+              </span>
+              <span className="hidden sm:block font-sans text-[10px] uppercase tracking-[0.25em] text-[#17242c]/35">
+                Same Questions. A Brighter You.
+              </span>
+            </div>
 
-          {/* Bottom CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[#1A1A1A]/10">
-            <button
-              type="button"
-              onClick={handleRestartQuiz}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#1A1A1A]/20 text-xs font-sans uppercase tracking-[0.2em] text-[#1A1A1A]/70 hover:text-[#1A1A1A] hover:border-[#1A1A1A] transition-all cursor-pointer"
-            >
-              <RotateCcw size={13} />
-              <span>Retake Reflections</span>
-            </button>
+            {/* Headline + body */}
+            <div className="mt-4 space-y-4">
+              <h1 className="font-serif-luxury text-4xl sm:text-5xl lg:text-[56px] font-light text-[#17242c] leading-[1.05]">
+                {activeOutcome.theme}
+              </h1>
+              <p className="font-serif text-base sm:text-lg text-[#17242c]/75 leading-relaxed max-w-xl">
+                {activeOutcome.reading}
+              </p>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => onComplete(activeOutcome)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-4 bg-[#4A3B32] hover:bg-[#1A1A1A] text-[#FAF8F5] rounded-full text-xs font-sans uppercase tracking-[0.25em] font-medium transition-all shadow-sm cursor-pointer group"
-            >
-              <Sparkles size={14} />
-              <span>Confirm Intention & Proceed to Craft (Step 04)</span>
-              <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-            </button>
+            {/* Intention Gem Card */}
+            <div className="mt-10 bg-[#eee6dd] border border-[#d4cbc1] rounded-2xl p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-center gap-8">
+                {/* Gem visual */}
+                <div className="relative shrink-0">
+                  <div
+                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full shadow-lg flex items-center justify-center border-4 border-[#f7f3ed]"
+                    style={{ backgroundColor: activeOutcome.intentionGem.hex }}
+                  >
+                    <div
+                      className="w-16 h-16 rounded-full opacity-60 blur-[1px]"
+                      style={{ backgroundColor: activeOutcome.intentionGem.accentHex }}
+                    />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/20 via-transparent to-white/40 pointer-events-none" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 text-[#17242c]">
+                    <NorthStarIcon size={16} />
+                  </div>
+                </div>
+
+                {/* Gem identity + keywords */}
+                <div className="flex-1 text-center sm:text-left">
+                  <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-[#69635d]">
+                    Your Intention Gem
+                  </p>
+                  <h3 className="font-serif-luxury text-3xl font-medium text-[#17242c] mt-1">
+                    {activeOutcome.intentionGem.name}
+                  </h3>
+                  <p className="font-sans text-xs uppercase tracking-wider text-[#c9a15a] mt-1">
+                    {activeOutcome.intentionGem.colorName}
+                  </p>
+
+                  <p className="font-sans text-[11px] uppercase tracking-[0.18em] font-semibold text-[#17242c] mt-4">
+                    {gemKeywords}
+                  </p>
+
+                  <p className="font-serif text-sm text-[#17242c]/70 italic leading-relaxed mt-3">
+                    "{activeOutcome.intentionGem.symbolism}"
+                  </p>
+
+                  {/* 4 benefit icons */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+                    {gemBenefits.map((benefit) => {
+                      const Icon = benefit.icon;
+                      return (
+                        <div
+                          key={benefit.label}
+                          className="flex flex-col items-center gap-2 p-3 rounded-lg bg-[#f7f3ed] border border-[#d4cbc1] text-center"
+                        >
+                          <Icon size={16} className="text-[#4d3023]" />
+                          <span className="font-sans text-[10px] uppercase tracking-wider text-[#17242c]/60 leading-tight">
+                            {benefit.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Handwritten affirmation note */}
+            <p className="font-script text-3xl sm:text-4xl text-[#4d3023] mt-8 text-center sm:text-left">
+              {activeOutcome.affirmation}
+            </p>
+
+            {/* Mandatory choice disclosure */}
+            <div className="mt-6 bg-[#eee6dd] border border-[#d4cbc1] rounded-xl p-5 sm:p-6 flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-[#f7f3ed] border border-[#d4cbc1] flex items-center justify-center shrink-0 mt-0.5 text-[#4d3023]">
+                <Info size={16} />
+              </div>
+              <div className="space-y-1 text-xs sm:text-sm font-sans text-[#17242c]/70 font-light leading-relaxed">
+                <p className="font-semibold text-[#17242c] uppercase tracking-wider text-[11px]">
+                  One recommendation. Full permission to choose differently.
+                </p>
+                <p>
+                  This reflection is a symbolic mirror designed to help anchor your private intention,
+                  not a prediction, medical diagnosis, or psychological assessment. You hold total
+                  sovereignty over your story and may choose whichever gem reflects your heart.
+                </p>
+              </div>
+            </div>
+
+            {/* Full Permission to Choose Differently: 8 Approved Intention Gems Palette */}
+            <div className="space-y-4 pt-6">
+              <div className="flex items-center justify-between border-b border-[#d4cbc1] pb-3">
+                <h3 className="font-sans text-xs uppercase tracking-[0.25em] font-semibold text-[#17242c]">
+                  Choose Differently · 8 Intention Gems
+                </h3>
+                <span className="text-[11px] font-sans uppercase tracking-wider text-[#69635d]">
+                  {activeOutcome.id !== recommendedOutcome.id
+                    ? `Chosen by you (Recommended: ${recommendedOutcome.title})`
+                    : 'Your recommendation'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {Object.entries(INTENTION_OUTCOMES)
+                  .filter(([key]) => key !== 'amethyst') // Only the 8 canonical outcomes per brief
+                  .map(([key, outcome]) => {
+                    const isSelected = activeOutcome.id === outcome.id;
+                    const isRecommended = recommendedOutcome.id === outcome.id;
+
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setActiveOutcome(outcome)}
+                        className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer relative ${
+                          isSelected
+                            ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
+                            : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
+                        }`}
+                      >
+                        {isRecommended && (
+                          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-[#13292a] text-[#f7f3ed] text-[9px] font-sans uppercase tracking-wider font-semibold">
+                            Recommended
+                          </span>
+                        )}
+
+                        <div className="flex items-center gap-3 mb-3">
+                          <div
+                            className="w-8 h-8 rounded-full shrink-0 border border-[#f7f3ed] shadow-sm"
+                            style={{ backgroundColor: outcome.intentionGem.hex }}
+                          />
+                          <div className="overflow-hidden">
+                            <span className="font-serif text-sm font-medium text-[#17242c] block truncate">
+                              {outcome.intentionGem.name}
+                            </span>
+                            <span className="font-sans text-[10px] uppercase tracking-wider text-[#17242c]/50 block truncate">
+                              {outcome.title.split('&')[0].trim()}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] font-sans pt-1 border-t border-[#13292a]/5">
+                          <span className="text-[#17242c]/60 truncate">{outcome.title}</span>
+                          {isSelected && (
+                            <Check size={13} className="text-[#4d3023] shrink-0 font-bold" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Bottom CTAs */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[#d4cbc1] mt-8">
+              <button
+                type="button"
+                onClick={handleRestartQuiz}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#d4cbc1] text-xs font-sans uppercase tracking-[0.2em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer"
+              >
+                <RotateCcw size={13} />
+                <span>Retake Reflections</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onComplete(activeOutcome)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-4 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-xs font-sans uppercase tracking-[0.25em] font-medium transition-all shadow-sm cursor-pointer group"
+              >
+                <Sparkles size={14} />
+                <span>Continue to Craft</span>
+                <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
