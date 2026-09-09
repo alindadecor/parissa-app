@@ -17,6 +17,7 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 import { NorthStarIcon } from './GemIcon';
+import { GEMSTONES } from '../data/gemstones';
 
 interface Step03Props {
   initialIntention?: IntentionOutcome;
@@ -125,6 +126,10 @@ export const Step03Intention: React.FC<Step03Props> = ({
     .map((s) => s.trim().replace(/^and\s+/i, '').toUpperCase())
     .filter(Boolean)
     .join(' · ');
+
+  const matchedGemstone = GEMSTONES.find(
+    (g) => g.name.toLowerCase() === activeOutcome.intentionGem.name.toLowerCase(),
+  );
 
   const gemBenefits = [
     { icon: Gem, label: 'A conscious talisman' },
@@ -412,16 +417,26 @@ export const Step03Intention: React.FC<Step03Props> = ({
               <div className="flex flex-col sm:flex-row items-center gap-8">
                 {/* Gem visual */}
                 <div className="relative shrink-0">
-                  <div
-                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full shadow-lg flex items-center justify-center border-4 border-[#f7f3ed]"
-                    style={{ backgroundColor: activeOutcome.intentionGem.hex }}
-                  >
+                  {matchedGemstone ? (
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-lg border-4 border-[#f7f3ed]">
+                      <img
+                        src={matchedGemstone.image}
+                        alt={matchedGemstone.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
                     <div
-                      className="w-16 h-16 rounded-full opacity-60 blur-[1px]"
-                      style={{ backgroundColor: activeOutcome.intentionGem.accentHex }}
-                    />
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/20 via-transparent to-white/40 pointer-events-none" />
-                  </div>
+                      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full shadow-lg flex items-center justify-center border-4 border-[#f7f3ed]"
+                      style={{ backgroundColor: activeOutcome.intentionGem.hex }}
+                    >
+                      <div
+                        className="w-16 h-16 rounded-full opacity-60 blur-[1px]"
+                        style={{ backgroundColor: activeOutcome.intentionGem.accentHex }}
+                      />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/20 via-transparent to-white/40 pointer-events-none" />
+                    </div>
+                  )}
                   <div className="absolute -top-1 -right-1 text-[#17242c]">
                     <NorthStarIcon size={16} />
                   </div>
@@ -433,14 +448,14 @@ export const Step03Intention: React.FC<Step03Props> = ({
                     Your Intention Gem
                   </p>
                   <h3 className="font-serif-luxury text-3xl font-medium text-[#17242c] mt-1">
-                    {activeOutcome.intentionGem.name}
+                    {matchedGemstone ? matchedGemstone.name : activeOutcome.intentionGem.name}
                   </h3>
                   <p className="font-sans text-xs uppercase tracking-wider text-[#c9a15a] mt-1">
                     {activeOutcome.intentionGem.colorName}
                   </p>
 
                   <p className="font-sans text-[11px] uppercase tracking-[0.18em] font-semibold text-[#17242c] mt-4">
-                    {gemKeywords}
+                    {matchedGemstone ? matchedGemstone.keywords : gemKeywords}
                   </p>
 
                   <p className="font-serif text-sm text-[#17242c]/70 italic leading-relaxed mt-3">
