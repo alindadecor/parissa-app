@@ -39,7 +39,7 @@ export function ShopifyFooter() {
   return (
     <footer
       style={{
-        backgroundColor: '#1A1A1A',
+        backgroundColor: '#2C1810',
         color: '#F5F0EB',
         padding: '48px 24px',
         fontFamily: 'Inter, sans-serif',

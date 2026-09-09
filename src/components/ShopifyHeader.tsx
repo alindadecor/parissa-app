@@ -40,7 +40,7 @@ export function ShopifyHeader({ bagCount = 0 }: { bagCount?: number }) {
   return (
     <header
       className="sticky top-0 z-50 w-full"
-      style={{ backgroundColor: '#1A1A1A' }}
+      style={{ backgroundColor: '#2C1810' }}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <a
