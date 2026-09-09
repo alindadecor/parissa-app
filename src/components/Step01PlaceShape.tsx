@@ -3,6 +3,11 @@ import { Hand, Finger, DiamondShape } from '../types';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { SilhouetteEmblem } from './GemIcon';
 
+const HAND_IMAGES: Record<Hand, string> = {
+  left: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/left-hand_6c47e33d-d942-4168-a96a-704c5b7c89e1.png?v=1788723046',
+  right: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/right-hand.png?v=1788722733',
+};
+
 interface Step01Props {
   initialHand?: Hand;
   initialFinger?: Finger;
@@ -115,30 +120,16 @@ export const Step01PlaceShape: React.FC<Step01Props> = ({
               {/* Subtle Linen Background Texture */}
               <div className="absolute inset-0 bg-[radial-gradient(#1A1A1A_1px,transparent_1px)] [background-size:16px_16px] opacity-5 pointer-events-none" />
 
-              {/* Hand Line Illustration */}
-              <div
-                className={`relative w-full h-full flex items-center justify-center transition-transform duration-500 ${
-                  hand === 'right' ? 'scale-x-[-1]' : 'scale-x-1'
-                }`}
-              >
-                <svg
-                  viewBox="0 0 340 420"
-                  className="w-full h-full max-h-[360px] drop-shadow-sm select-none"
-                  fill="none"
-                >
-                  {/* Graceful Hand Silhouette */}
-                  <path
-                    d="M170,410 C150,380 130,340 120,310 C100,270 70,250 60,200 C50,150 68,135 78,140 C88,145 92,180 98,215 C100,180 108,100 122,95 C134,90 138,125 140,195 C145,150 162,75 178,75 C192,75 194,120 196,190 C202,150 216,105 230,105 C242,105 244,140 242,210 C250,225 260,240 282,245 C298,248 300,275 285,290 C265,310 240,335 230,410 Z"
-                    fill="#FAF8F5"
-                    stroke="#D2C8BC"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-
-                  {/* Gentle Wrist crease accent */}
-                  <path d="M150,380 C170,385 200,385 220,380" stroke="#E2D9CE" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+              {/* Hand Photography */}
+              <div className="relative w-full h-full flex items-center justify-center transition-transform duration-500">
+                <img
+                  src={HAND_IMAGES[hand]}
+                  alt={`${hand === 'left' ? 'Left' : 'Right'} hand wearing a ring`}
+                  className="w-full h-full object-cover rounded-2xl select-none"
+                  width={1024}
+                  height={1536}
+                  loading="lazy"
+                />
 
                 {/* Interactive Pin Markers: P, R, M, I */}
                 {Object.entries(pinPositions).map(([fKey, pos]) => {
