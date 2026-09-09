@@ -1,15 +1,45 @@
-import React, { useState } from 'react';
-import { DiamondShape, CollectionName, ProductListing } from '../types';
-import { COLLECTIONS, DIAMOND_SHAPES, ESSENCE_ARCHETYPES, INTENTION_OUTCOMES } from '../data/parissaData';
+import React, { useState, useMemo } from 'react';
+import { ProductListing } from '../types';
+import { METALS } from '../data/parissaData';
 import { useShopifyProducts } from '../hooks/useShopifyProducts';
 import { JewelryCanvas } from './JewelryCanvas';
-import { ArrowRight, Sparkles, Filter, Eye, Loader2 } from 'lucide-react';
+import { PriceDisplay } from './PriceDisplay';
+import { Loader2 } from 'lucide-react';
 
-const SHAPE_IMG_FALLBACK: Record<DiamondShape, string> = {
-  round: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/round.png?v=1788934646',
-  oval: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/oval.png?v=1788934646',
-  marquise: 'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/marquise.png?v=1788934645',
-};
+const COLLECTION_FILTERS = [
+  { label: 'All Rings', handle: null },
+  { label: 'The Constellation', handle: 'the-constellation' },
+  { label: 'The Bezel', handle: 'the-bezel' },
+  { label: 'The Nirun', handle: 'the-nirun' },
+  { label: 'The Petite', handle: 'the-petite' },
+];
+
+type SortOption = 'newest' | 'price-asc' | 'price-desc';
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'price-asc', label: 'Price ↑' },
+  { value: 'price-desc', label: 'Price ↓' },
+];
+
+const METAL_LABELS: Record<string, string> = {};
+Object.values(METALS).forEach((m) => {
+  METAL_LABELS[m.id] = m.name;
+});
+
+function parsePrice(priceDisplay?: string): number {
+  if (!priceDisplay) return NaN;
+  const cleaned = priceDisplay.replace(/[^0-9.,]/g, '').replace(/,/g, '');
+  const num = parseFloat(cleaned);
+  return Number.isNaN(num) ? NaN : num;
+}
+
+function matchesCollection(prod: ProductListing, label: string): boolean {
+  if (prod.collection === label) return true;
+  const lower = prod.name.toLowerCase();
+  const token = label.replace('The ', '').toLowerCase();
+  return lower.includes(token);
+}
 
 interface ExploreRingsProps {
   onPersonalizeRing: (product: ProductListing) => void;
@@ -21,104 +51,86 @@ export const ExploreRings: React.FC<ExploreRingsProps> = ({
   onOpenProductDetail,
 }) => {
   const { products, loading, error } = useShopifyProducts();
-  const [selectedShapeFilter, setSelectedShapeFilter] = useState<DiamondShape | 'all'>('all');
-  const [selectedCollectionFilter, setSelectedCollectionFilter] = useState<CollectionName | 'all'>('all');
+  const [activeFilter, setActiveFilter] = useState<string>('All Rings');
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
 
-  const filteredProducts = products.filter((prod) => {
-    if (selectedShapeFilter !== 'all' && prod.shape !== selectedShapeFilter) return false;
-    if (selectedCollectionFilter !== 'all' && prod.collection !== selectedCollectionFilter) return false;
-    return true;
-  });
+  const displayedProducts = useMemo(() => {
+    let filtered = products;
+    if (activeFilter !== 'All Rings') {
+      filtered = products.filter((p) => matchesCollection(p, activeFilter));
+    }
+
+    if (sortOption === 'newest') return filtered;
+
+    const withPrice: { prod: ProductListing; price: number }[] = [];
+    const noPrice: ProductListing[] = [];
+    for (const prod of filtered) {
+      const price = parsePrice(prod.priceDisplay);
+      if (Number.isNaN(price)) {
+        noPrice.push(prod);
+      } else {
+        withPrice.push({ prod, price });
+      }
+    }
+    withPrice.sort((a, b) =>
+      sortOption === 'price-asc' ? a.price - b.price : b.price - a.price
+    );
+    return [...withPrice.map((w) => w.prod), ...noPrice];
+  }, [products, activeFilter, sortOption]);
 
   return (
-    <div className="bg-[#F9F7F2] min-h-screen py-16 px-6 md:px-12 max-w-7xl mx-auto">
-      {/* Header & Editorial Context */}
-      <div className="text-center max-w-2xl mx-auto mb-16">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <span className="h-[1px] w-8 bg-[#1A1A1A]/30"></span>
-          <span className="font-sans text-xs uppercase tracking-[0.3em] font-bold text-[#1A1A1A]/60">
-            Curated Catalog
-          </span>
-          <span className="h-[1px] w-8 bg-[#1A1A1A]/30"></span>
-        </div>
-        <h1 className="font-serif-luxury text-4xl sm:text-5xl md:text-6xl font-light text-[#1A1A1A] mb-4">
+    <div className="min-h-screen py-16 px-6 md:px-12 max-w-7xl mx-auto" style={{ backgroundColor: '#f7f3ed' }}>
+      <div className="text-center max-w-2xl mx-auto mb-12">
+        <h1 className="font-serif-luxury text-4xl sm:text-5xl md:text-6xl font-light mb-4" style={{ color: '#17242c' }}>
           Explore The Rings
         </h1>
-        <p className="font-serif italic text-lg text-[#1A1A1A]/70 leading-relaxed">
-          Browse by our three launch diamond shapes and four signature collections. Each design is ready to be consecrated with your personalized astrological talisman gems.
+        <p className="font-sans text-base leading-relaxed" style={{ color: '#69635d' }}>
+          Each ring is made to order. Designed around you.
         </p>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-[#FAF8F5] border border-[#1A1A1A]/10 p-6 rounded-sm mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
-        {/* Shape Filter Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold text-[#1A1A1A]/60 mr-2">
-            Shape:
-          </span>
-          <button
-            type="button"
-            onClick={() => setSelectedShapeFilter('all')}
-            className={`px-4 py-2 rounded-full text-xs font-sans uppercase tracking-[0.15em] border transition-all cursor-pointer ${
-              selectedShapeFilter === 'all'
-                ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                : 'border-[#1A1A1A]/15 text-[#1A1A1A] hover:border-[#1A1A1A]'
-            }`}
-          >
-            All Shapes
-          </button>
-          {(['round', 'oval', 'marquise'] as DiamondShape[]).map((shp) => (
-            <button
-              key={shp}
-              type="button"
-              onClick={() => setSelectedShapeFilter(shp)}
-              className={`px-4 py-2 rounded-full text-xs font-sans uppercase tracking-[0.15em] border transition-all cursor-pointer ${
-                selectedShapeFilter === shp
-                  ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                  : 'border-[#1A1A1A]/15 text-[#1A1A1A] hover:border-[#1A1A1A]'
-              }`}
-            >
-              {DIAMOND_SHAPES[shp].name.replace(' Brilliant', '')}
-            </button>
-          ))}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
+        <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+          {COLLECTION_FILTERS.map((f) => {
+            const isActive = activeFilter === f.label;
+            return (
+              <button
+                key={f.label}
+                type="button"
+                onClick={() => setActiveFilter(f.label)}
+                className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-sans uppercase tracking-widest transition-all cursor-pointer"
+                style={{
+                  backgroundColor: isActive ? '#4d3023' : 'transparent',
+                  color: isActive ? '#ffffff' : '#17242c',
+                  border: `1px solid ${isActive ? '#4d3023' : '#d4cbc1'}`,
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Collection Filter Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-sans uppercase tracking-[0.2em] font-bold text-[#1A1A1A]/60 mr-2">
-            Collection:
-          </span>
-          <button
-            type="button"
-            onClick={() => setSelectedCollectionFilter('all')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-sans uppercase tracking-[0.15em] border transition-all cursor-pointer ${
-              selectedCollectionFilter === 'all'
-                ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                : 'border-[#1A1A1A]/15 text-[#1A1A1A] hover:border-[#1A1A1A]'
-            }`}
-          >
-            All
-          </button>
-          {(Object.keys(COLLECTIONS) as CollectionName[]).map((col) => (
-            <button
-              key={col}
-              type="button"
-              onClick={() => setSelectedCollectionFilter(col)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-sans uppercase tracking-[0.15em] border transition-all cursor-pointer ${
-                selectedCollectionFilter === col
-                  ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                  : 'border-[#1A1A1A]/15 text-[#1A1A1A] hover:border-[#1A1A1A]'
-              }`}
-            >
-              {col.replace('The ', '')}
-            </button>
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as SortOption)}
+          className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-sans uppercase tracking-widest cursor-pointer appearance-none"
+          style={{
+            backgroundColor: '#faf8f4',
+            color: '#17242c',
+            border: '1px solid #d4cbc1',
+          }}
+        >
+          {SORT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
-      {/* Loading / Error / Empty states */}
       {loading && (
-        <div className="flex flex-col items-center justify-center py-24 text-[#1A1A1A]/60">
+        <div className="flex flex-col items-center justify-center py-24" style={{ color: '#69635d' }}>
           <Loader2 className="w-6 h-6 mb-3 animate-spin" />
           <span className="text-xs font-sans uppercase tracking-[0.2em]">Loading catalog…</span>
         </div>
@@ -126,119 +138,106 @@ export const ExploreRings: React.FC<ExploreRingsProps> = ({
 
       {!loading && error && (
         <div className="text-center py-24 max-w-md mx-auto">
-          <p className="font-sans text-sm text-red-700 leading-relaxed mb-2">
+          <p className="font-sans text-sm leading-relaxed mb-2" style={{ color: '#b91c1c' }}>
             {error}
           </p>
-          <p className="font-sans text-xs text-[#1A1A1A]/60">
+          <p className="font-sans text-xs" style={{ color: '#69635d' }}>
             Please check the Storefront API connection and try again.
           </p>
         </div>
       )}
 
-      {!loading && !error && filteredProducts.length === 0 && (
+      {!loading && !error && displayedProducts.length === 0 && (
         <div className="text-center py-24">
-          <p className="font-sans text-sm text-[#1A1A1A]/60">
+          <p className="font-sans text-sm" style={{ color: '#69635d' }}>
             No designs found for the selected filters.
           </p>
         </div>
       )}
 
-      {/* Rings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {filteredProducts.map((prod) => {
-          const gem = ESSENCE_ARCHETYPES.Leo.essenceGem;
-          const intentionGem = INTENTION_OUTCOMES.emerald_sovereignty.intentionGem;
-          return (
-            <div
-              key={prod.id}
-              className="bg-[#FAF8F5] border border-[#1A1A1A]/10 rounded-sm overflow-hidden flex flex-col justify-between group hover:border-[#1A1A1A]/30 transition-all shadow-sm"
-            >
-              {/* Visual Canvas Area */}
-              <div className="p-8 bg-[#E8E4D9]/40 border-b border-[#1A1A1A]/10 flex flex-col items-center justify-center relative min-h-[300px]">
-                <div className="absolute top-4 left-4 text-[9px] font-sans uppercase tracking-[0.25em] text-[#1A1A1A]/50">
-                  {prod.collection}
-                </div>
-                <div className="absolute top-4 right-4 text-xs font-serif text-[#1A1A1A]/40">
-                  ✦
+      {!loading && !error && displayedProducts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {displayedProducts.map((prod) => {
+            const metalLabel = METAL_LABELS[prod.metalDefault] || '18K Yellow Gold';
+            const shapeLabel = prod.shape.charAt(0).toUpperCase() + prod.shape.slice(1);
+            return (
+              <div
+                key={prod.id}
+                className="flex flex-col justify-between"
+                style={{
+                  backgroundColor: '#faf8f4',
+                  border: '1px solid #e8e0d8',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                }}
+              >
+                <div className="relative p-4 flex items-center justify-center" style={{ aspectRatio: '1/1' }}>
+                  <span
+                    className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-sans uppercase tracking-widest"
+                    style={{ backgroundColor: '#f7f3ed', color: '#69635d', border: '1px solid #d4cbc1' }}
+                  >
+                    {prod.collection}
+                  </span>
+
+                  {prod.imageUrl ? (
+                    <img
+                      src={prod.imageUrl}
+                      alt={prod.name}
+                      loading="lazy"
+                      className="w-full h-full object-contain p-4"
+                    />
+                  ) : (
+                    <JewelryCanvas
+                      shape={prod.shape}
+                      metal={prod.metalDefault}
+                      carat={prod.carat}
+                      className="w-full h-full"
+                    />
+                  )}
                 </div>
 
-                {prod.imageUrl ? (
-                  <img
-                    src={prod.imageUrl}
-                    alt={prod.name}
-                    loading="lazy"
-                    className="w-full max-w-[220px] aspect-square object-cover rounded-sm group-hover:scale-105 transition-transform duration-500 shadow-sm"
-                  />
-                ) : (
-                  <JewelryCanvas
-                    shape={prod.shape}
-                    metal={prod.metalDefault}
-                    carat={prod.carat}
-                    essenceGem={gem}
-                    intentionGem={intentionGem}
-                    showHiddenGems={true}
-                    className="w-full max-w-[220px] aspect-square group-hover:scale-105 transition-transform duration-500"
-                  />
-                )}
-
-                <div className="absolute bottom-3 left-0 w-full text-center text-[10px] font-sans uppercase tracking-[0.2em] text-[#1A1A1A]/40">
-                  {prod.imageUrl ? 'Includes Hidden Talisman Bridge' : `Model: ${prod.shape}`}
-                </div>
-              </div>
-
-              {/* Content & Actions */}
-              <div className="p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-serif-luxury text-2xl text-[#1A1A1A] font-medium mb-1">
+                <div className="p-5 flex-1 flex flex-col gap-3">
+                  <h3 className="font-serif-luxury text-lg" style={{ color: '#17242c' }}>
                     {prod.name}
                   </h3>
-                  <p className="font-sans text-xs text-[#1A1A1A]/60 mb-3">
-                    {prod.subtitle}
-                  </p>
-                  <p className="font-sans text-xs text-[#1A1A1A]/75 leading-relaxed mb-4 line-clamp-2">
-                    {prod.description}
+
+                  <p className="text-xs font-sans" style={{ color: '#69635d' }}>
+                    {shapeLabel} · {metalLabel}
                   </p>
 
-                  <div className="flex items-center justify-between py-2 border-t border-b border-[#1A1A1A]/10 text-xs font-sans mb-6">
-                    <span className="text-[#1A1A1A]/60">Carat & Metal:</span>
-                    <span className="font-medium text-[#1A1A1A]">{prod.carat.toFixed(1)}ct • 18K Solid Gold</span>
-                  </div>
-                </div>
+                  <PriceDisplay
+                    fallbackText={prod.priceDisplay || 'Price on request'}
+                    className="text-sm font-sans font-semibold"
+                  />
 
-                {/* Price & Personalize CTA */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-sans uppercase tracking-[0.2em] text-[#1A1A1A]/50">Investment</span>
-                    <span className="font-mono text-xs font-semibold text-[#1A1A1A] tracking-wider">
-                      {prod.priceDisplay || 'Price on request'}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onOpenProductDetail(prod)}
-                      className="py-3 px-2 border border-[#1A1A1A]/20 rounded-full text-[11px] font-sans uppercase tracking-[0.15em] hover:bg-[#E8E4D9]/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-[#1A1A1A]"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>View Detail</span>
-                    </button>
-
+                  <div className="flex flex-col gap-2 mt-2">
                     <button
                       type="button"
                       onClick={() => onPersonalizeRing(prod)}
-                      className="py-3 px-2 bg-[#1A1A1A] text-[#F9F7F2] rounded-full text-[11px] font-sans uppercase tracking-[0.15em] font-medium hover:bg-[#1A1A1A]/90 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                      className="w-full rounded-full text-xs font-sans uppercase tracking-widest font-medium transition-all cursor-pointer"
+                      style={{
+                        backgroundColor: '#4d3023',
+                        color: '#ffffff',
+                        height: '36px',
+                      }}
                     >
-                      <Sparkles className="w-3 h-3 text-[#F9F7F2]" />
-                      <span>Personalize</span>
+                      Add to Journey →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenProductDetail(prod)}
+                      className="w-full text-center text-xs font-sans uppercase tracking-widest cursor-pointer bg-transparent border-none"
+                      style={{ color: '#69635d', height: '28px' }}
+                    >
+                      View
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
