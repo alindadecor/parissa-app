@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { NorthStarIcon } from './GemIcon';
 import { GEMSTONES } from '../data/gemstones';
+import { SelectionCard } from './SelectionCard';
 
 interface Step03Props {
   initialIntention?: IntentionOutcome;
@@ -325,7 +326,7 @@ export const Step03Intention: React.FC<Step03Props> = ({
               </div>
 
               {/* 4 Reflection Options (Strictly text only, no gems, no scoring categories) */}
-              <div className="space-y-3 pt-2">
+              <div className="hidden md:block space-y-3 pt-2">
                 {currentDimension.options.map((option) => {
                   const isSelected = currentSelectedOptionId === option.id;
 
@@ -376,6 +377,18 @@ export const Step03Intention: React.FC<Step03Props> = ({
                     </button>
                   );
                 })}
+              </div>
+              <div className="md:hidden space-y-3 pt-2">
+                {currentDimension.options.map((option) => (
+                  <SelectionCard
+                    key={option.id}
+                    letter={option.letter}
+                    label={option.letter}
+                    description={option.label}
+                    selected={currentSelectedOptionId === option.id}
+                    onClick={() => handleSelectOption(option.id)}
+                  />
+                ))}
               </div>
             </div>
 
@@ -550,46 +563,19 @@ export const Step03Intention: React.FC<Step03Props> = ({
                   .map(([key, outcome]) => {
                     const isSelected = activeOutcome.id === outcome.id;
                     const isRecommended = recommendedOutcome.id === outcome.id;
+                    const gem = GEMSTONES.find(
+                      (g) => g.name.toLowerCase() === outcome.intentionGem.name.toLowerCase(),
+                    );
 
                     return (
-                      <button
+                      <SelectionCard
                         key={key}
-                        type="button"
+                        image={gem?.image}
+                        label={outcome.intentionGem.name}
+                        recommended={isRecommended}
+                        selected={isSelected}
                         onClick={() => setActiveOutcome(outcome)}
-                        className={`p-2.5 sm:p-4 rounded-xl border text-left flex flex-col items-center text-center relative min-h-[80px] transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
-                            : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
-                        }`}
-                      >
-                        {isRecommended && (
-                          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-[#13292a] text-[#f7f3ed] text-[9px] font-sans uppercase tracking-wider font-semibold whitespace-nowrap">
-                            Recommended
-                          </span>
-                        )}
-
-                        <div className="flex flex-col items-center gap-2 mb-3">
-                          <div
-                            className="w-8 h-8 rounded-full shrink-0 border border-[#f7f3ed] shadow-sm"
-                            style={{ backgroundColor: outcome.intentionGem.hex }}
-                          />
-                          <div className="overflow-hidden">
-                            <span className="font-serif text-sm font-medium text-[#17242c] block truncate">
-                              {outcome.intentionGem.name}
-                            </span>
-                            <span className="font-sans text-[10px] uppercase tracking-wider text-[#17242c]/50 block truncate">
-                              {outcome.title.split('&')[0].trim()}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="w-full flex items-center justify-between text-[11px] font-sans pt-1 border-t border-[#13292a]/5">
-                          <span className="text-[#17242c]/60 truncate">{outcome.title}</span>
-                          {isSelected && (
-                            <Check size={13} className="text-[#4d3023] shrink-0 font-bold" />
-                          )}
-                        </div>
-                      </button>
+                      />
                     );
                   })}
               </div>

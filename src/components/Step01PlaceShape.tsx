@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Hand, Finger, DiamondShape } from '../types';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { SelectionCard } from './SelectionCard';
 
 interface Step01Props {
   initialHand?: Hand;
@@ -134,7 +135,7 @@ export const Step01PlaceShape: React.FC<Step01Props> = ({
                 </p>
 
                 <div className="text-[13px] font-medium tracking-[0.2em] mt-7 mb-3.5">1. HAND</div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="hidden md:grid grid-cols-2 gap-3">
                   {(['left', 'right'] as Hand[]).map((h) => {
                     const isSelected = hand === h;
                     return (
@@ -170,9 +171,21 @@ export const Step01PlaceShape: React.FC<Step01Props> = ({
                     );
                   })}
                 </div>
+                <div className="md:hidden space-y-3">
+                  {(['left', 'right'] as Hand[]).map((h) => (
+                    <SelectionCard
+                      key={h}
+                      image={HAND_IMAGES[h]}
+                      label={h === 'left' ? 'Left Hand' : 'Right Hand'}
+                      sublabel={h === 'left' ? 'GROWTH · BALANCE' : 'ACTION · PROTECTION'}
+                      selected={hand === h}
+                      onClick={selectInGroup('hand', h, setHand)}
+                    />
+                  ))}
+                </div>
 
                 <div className="text-[13px] font-medium tracking-[0.2em] mt-7 mb-3.5">2. FINGER</div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                   {(['index', 'middle', 'ring', 'pinky'] as Finger[]).map((f) => {
                     const isSelected = finger === f;
                     return (
@@ -200,6 +213,22 @@ export const Step01PlaceShape: React.FC<Step01Props> = ({
                       </button>
                     );
                   })}
+                </div>
+                <div className="md:hidden space-y-3">
+                  {([
+                    { key: 'index', emoji: '✌️' },
+                    { key: 'middle', emoji: '🤞' },
+                    { key: 'ring', emoji: '💍' },
+                    { key: 'pinky', emoji: '🤙' },
+                  ] as { key: Finger; emoji: string }[]).map(({ key, emoji }) => (
+                    <SelectionCard
+                      key={key}
+                      emoji={emoji}
+                      label={key.charAt(0).toUpperCase() + key.slice(1)}
+                      selected={finger === key}
+                      onClick={selectInGroup('finger', key, setFinger)}
+                    />
+                  ))}
                 </div>
 
                 <button
@@ -238,7 +267,7 @@ export const Step01PlaceShape: React.FC<Step01Props> = ({
                   change it later.
                 </p>
 
-                <div className="grid sm:grid-cols-3 gap-2.5 sm:gap-4 mt-4">
+                <div className="hidden md:grid sm:grid-cols-3 gap-2.5 sm:gap-4 mt-4">
                   {(['round', 'oval', 'marquise'] as DiamondShape[]).map((s) => {
                     const isSelected = shape === s;
                     const meta = SHAPE_META[s];
@@ -275,6 +304,22 @@ export const Step01PlaceShape: React.FC<Step01Props> = ({
                           <div className="text-center text-xs leading-[1.55] text-[#77695e] mt-3 pb-1">{meta.copy}</div>
                         </div>
                       </button>
+                    );
+                  })}
+                </div>
+                <div className="md:hidden space-y-3 mt-4">
+                  {(['round', 'oval', 'marquise'] as DiamondShape[]).map((s) => {
+                    const meta = SHAPE_META[s];
+                    return (
+                      <SelectionCard
+                        key={s}
+                        image={SHAPE_IMAGES[s]}
+                        label={meta.name}
+                        sublabel={meta.title}
+                        description={meta.copy}
+                        selected={shape === s}
+                        onClick={selectInGroup('shape', s, setShape)}
+                      />
                     );
                   })}
                 </div>

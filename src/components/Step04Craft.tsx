@@ -14,6 +14,7 @@ import { JewelryCanvas } from './JewelryCanvas';
 import { ArrowRight, ArrowLeft, Check, Info, Sparkles, Gem, Hexagon } from 'lucide-react';
 import { NorthStarIcon } from './GemIcon';
 import { useCollectionVariants, LABEL_TO_SLUG, METAL_META, getImageForMetal } from '../hooks/useCollectionVariants';
+import { SelectionCard } from './SelectionCard';
 
 interface Step04Props {
   initialConfig: Partial<RingConfiguration>;
@@ -350,43 +351,60 @@ export const Step04Craft: React.FC<Step04Props> = ({
             Every PARISSA setting hides your two talisman gems — one inward, one outward.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+          <div className="hidden md:block">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+              {(Object.keys(COLLECTIONS) as CollectionName[]).map((colKey) => {
+                const colInfo = COLLECTIONS[colKey];
+                const isSelected = collection === colKey;
+                return (
+                  <button
+                    key={colKey}
+                    type="button"
+                    onClick={() => setCollection(colKey)}
+                    className={`p-6 rounded-2xl border text-left transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
+                        : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-serif-luxury text-2xl text-[#17242c]">
+                          {colInfo.name}
+                        </h3>
+                        <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#4d3023] mt-1">
+                          {colInfo.tagline}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <span className="w-7 h-7 rounded-full bg-[#4d3023] text-[#f7f3ed] flex items-center justify-center shrink-0">
+                          <Check size={13} strokeWidth={2.5} />
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-serif text-sm text-[#17242c]/65 leading-relaxed mt-4">
+                      {colInfo.description.split('.')[0]}.
+                    </p>
+                    <p className="font-sans text-[10px] uppercase tracking-wider text-[#69635d] mt-3">
+                      {colInfo.architecturalDetail}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="md:hidden space-y-3 mt-10">
             {(Object.keys(COLLECTIONS) as CollectionName[]).map((colKey) => {
               const colInfo = COLLECTIONS[colKey];
-              const isSelected = collection === colKey;
               return (
-                <button
+                <SelectionCard
                   key={colKey}
-                  type="button"
+                  label={colInfo.name}
+                  sublabel={colInfo.tagline}
+                  description={`${colInfo.description.split('.')[0]}.`}
+                  selected={collection === colKey}
                   onClick={() => setCollection(colKey)}
-                  className={`p-6 rounded-2xl border text-left transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
-                      : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-serif-luxury text-2xl text-[#17242c]">
-                        {colInfo.name}
-                      </h3>
-                      <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#4d3023] mt-1">
-                        {colInfo.tagline}
-                      </p>
-                    </div>
-                    {isSelected && (
-                      <span className="w-7 h-7 rounded-full bg-[#4d3023] text-[#f7f3ed] flex items-center justify-center shrink-0">
-                        <Check size={13} strokeWidth={2.5} />
-                      </span>
-                    )}
-                  </div>
-                  <p className="font-serif text-sm text-[#17242c]/65 leading-relaxed mt-4">
-                    {colInfo.description.split('.')[0]}.
-                  </p>
-                  <p className="font-sans text-[10px] uppercase tracking-wider text-[#69635d] mt-3">
-                    {colInfo.architecturalDetail}
-                  </p>
-                </button>
+                />
               );
             })}
           </div>
@@ -441,7 +459,7 @@ export const Step04Craft: React.FC<Step04Props> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+          <div className="hidden md:grid md:grid-cols-2 gap-4 mt-10">
             {displayMetalOptions.map((opt) => {
               const isSelected = selectedMetalLabel === opt.label;
               return (
@@ -491,6 +509,22 @@ export const Step04Craft: React.FC<Step04Props> = ({
                 </button>
               );
             })}
+          </div>
+          <div className="md:hidden space-y-3 mt-10">
+            {displayMetalOptions.map((opt) => (
+              <SelectionCard
+                key={opt.label}
+                swatch={opt.swatch}
+                label={opt.label}
+                sublabel={opt.subtitle}
+                description={opt.description}
+                selected={selectedMetalLabel === opt.label}
+                onClick={() => {
+                  const slug = LABEL_TO_SLUG[opt.label];
+                  if (slug) setMetal(slug);
+                }}
+              />
+            ))}
           </div>
 
           <div className="pt-10 flex items-center justify-between border-t border-[#d4cbc1] mt-12">
