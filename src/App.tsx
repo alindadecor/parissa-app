@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 import { JourneyFlow } from './components/JourneyFlow';
+import { JourneyLayout } from './components/JourneyLayout';
 import { ShopifyHeader } from './components/ShopifyHeader';
 import { ShopifyFooter } from './components/ShopifyFooter';
 import { ExploreRings } from './components/ExploreRings';
@@ -18,6 +26,9 @@ type EditorialPage = 'journal' | 'about' | 'craft';
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isJourney = location.pathname.startsWith('/journey');
 
   const [presetShape, setPresetShape] = useState<DiamondShape>('oval');
 
@@ -131,7 +142,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F9F7F2] text-[#1A1A1A] font-sans selection:bg-[#E8E4D9] selection:text-[#1A1A1A]">
-      <ShopifyHeader bagCount={cartItems.length} />
+      {!isJourney && <ShopifyHeader bagCount={cartItems.length} />}
       <main className="flex-1">
         <Routes>
           <Route
@@ -142,13 +153,15 @@ function AppContent() {
             path="/journey"
             element={
               <ErrorBoundary>
-                <JourneyFlow
-                  initialPresetShape={presetShape}
-                  onBackToHome={() => navigate('/')}
-                  onAddToCart={handleAddToCart}
-                  onSaveStory={handleSaveStory}
-                  isConfigSaved={isConfigSaved}
-                />
+                <JourneyLayout>
+                  <JourneyFlow
+                    initialPresetShape={presetShape}
+                    onBackToHome={() => navigate('/')}
+                    onAddToCart={handleAddToCart}
+                    onSaveStory={handleSaveStory}
+                    isConfigSaved={isConfigSaved}
+                  />
+                </JourneyLayout>
               </ErrorBoundary>
             }
           />
@@ -254,7 +267,7 @@ function AppContent() {
         isCheckoutReady={isConfigured}
       />
 
-      <ShopifyFooter />
+      {!isJourney && <ShopifyFooter />}
     </div>
   );
 }
