@@ -39,6 +39,19 @@ export interface ShopifyImage {
   height?: number;
 }
 
+export interface ShopifyMenuItem {
+  title: string;
+  url: string;
+  resourceId?: string | null;
+  items?: ShopifyMenuItem[];
+}
+
+export interface ShopifyMenu {
+  id: string;
+  title: string;
+  items: ShopifyMenuItem[];
+}
+
 export interface ShopifyMoney {
   amount: string;
   currencyCode: string;
@@ -244,6 +257,37 @@ const PRODUCT_FIELDS = `
   }
 `;
 
+const MENU_QUERY = `
+  query GetMenus {
+    mainMenu: menu(handle: "main-menu") {
+      id
+      title
+      items {
+        title
+        url
+        resourceId
+        items {
+          title
+          url
+        }
+      }
+    }
+    footerMenu: menu(handle: "footer") {
+      id
+      title
+      items {
+        title
+        url
+        resourceId
+        items {
+          title
+          url
+        }
+      }
+    }
+  }
+`;
+
 function shopifyGraphql<T>(
   query: string,
   variables?: Record<string, unknown>
@@ -290,6 +334,7 @@ export interface IShopifyService {
     matchedVariant: ShopifyProductVariant | null;
   }>;
   createCheckoutUrl(items: { variantId: string; quantity: number; properties: Record<string, string> }[]): Promise<string | null>;
+  fetchMenus(): Promise<{ mainMenu: ShopifyMenu; footerMenu: ShopifyMenu } | null>;
 }
 
 function parseProduct(raw: any): ShopifyProduct {
@@ -425,6 +470,22 @@ export class ShopifyServiceBoundary implements IShopifyService {
     ) ?? match.variants[0] ?? null;
 
     return { product: match, matchedVariant: variant };
+  }
+
+  async fetchMenus(): Promise<{ mainMenu: ShopifyMenu; footerMenu: ShopifyMenu } | null> {
+    if (!this.isConfigured()) return null;
+
+    const data = await shopifyGraphql<{
+      mainMenu: ShopifyMenu | null;
+      footerMenu: ShopifyMenu | null;
+    }>(MENU_QUERY);
+
+    if (!data.mainMenu && !data.footerMenu) return null;
+
+    return {
+      mainMenu: data.mainMenu ?? { id: '', title: 'Main menu', items: [] },
+      footerMenu: data.footerMenu ?? { id: '', title: 'Footer menu', items: [] },
+    };
   }
 
   async createCheckoutUrl(

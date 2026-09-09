@@ -1,7 +1,8 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { JourneyFlow } from './components/JourneyFlow';
-import { JourneyHeader } from './components/JourneyHeader';
+import { ShopifyHeader } from './components/ShopifyHeader';
+import { ShopifyFooter } from './components/ShopifyFooter';
 import { ExploreRings } from './components/ExploreRings';
 import { CollectionsView } from './components/CollectionsView';
 import { EditorialPages } from './components/EditorialPages';
@@ -14,15 +15,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { useShopifyCheckout } from './hooks/useShopifyCheckout';
 
 type EditorialPage = 'journal' | 'about' | 'craft';
-
-function JourneyLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <JourneyHeader />
-      <div style={{ paddingTop: '60px' }}>{children}</div>
-    </>
-  );
-}
 
 function AppContent() {
   const navigate = useNavigate();
@@ -139,6 +131,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F9F7F2] text-[#1A1A1A] font-sans selection:bg-[#E8E4D9] selection:text-[#1A1A1A]">
+      <ShopifyHeader bagCount={cartItems.length} />
       <main className="flex-1">
         <Routes>
           <Route
@@ -148,17 +141,15 @@ function AppContent() {
           <Route
             path="/journey"
             element={
-              <JourneyLayout>
-                <ErrorBoundary>
-                  <JourneyFlow
-                    initialPresetShape={presetShape}
-                    onBackToHome={() => navigate('/')}
-                    onAddToCart={handleAddToCart}
-                    onSaveStory={handleSaveStory}
-                    isConfigSaved={isConfigSaved}
-                  />
-                </ErrorBoundary>
-              </JourneyLayout>
+              <ErrorBoundary>
+                <JourneyFlow
+                  initialPresetShape={presetShape}
+                  onBackToHome={() => navigate('/')}
+                  onAddToCart={handleAddToCart}
+                  onSaveStory={handleSaveStory}
+                  isConfigSaved={isConfigSaved}
+                />
+              </ErrorBoundary>
             }
           />
           <Route
@@ -175,14 +166,12 @@ function AppContent() {
           <Route
             path="/collections"
             element={
-              <JourneyLayout>
-                <ErrorBoundary>
-                  <CollectionsView
-                    onStartJourney={() => handleStartJourney('oval')}
-                    onExploreCollection={() => navigate('/explore')}
-                  />
-                </ErrorBoundary>
-              </JourneyLayout>
+              <ErrorBoundary>
+                <CollectionsView
+                  onStartJourney={() => handleStartJourney('oval')}
+                  onExploreCollection={() => navigate('/explore')}
+                />
+              </ErrorBoundary>
             }
           />
           <Route
@@ -264,6 +253,8 @@ function AppContent() {
         onCheckout={() => createCheckout(cartItems)}
         isCheckoutReady={isConfigured}
       />
+
+      <ShopifyFooter />
     </div>
   );
 }
