@@ -155,17 +155,17 @@ export const Step02Essence: React.FC<Step02Props> = ({
               02 / 05 &nbsp;ESSENCE
             </span>
             <div className="hidden md:flex items-center gap-6 text-[#1A1A1A]/40 uppercase tracking-[0.2em]">
-              <span className="text-[#1A1A1A]/70 flex items-center gap-1.5">
-                <Check size={12} strokeWidth={2.5} /> 01
-              </span>
-              <div className="flex items-center gap-1.5 text-[#1A1A1A] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />
-                <span>02</span>
-              </div>
-              <NorthStarIcon size={12} className="text-[#1A1A1A]/30" />
-              <span>03</span>
-              <span>04</span>
-              <span>05</span>
+                <span className="text-[#1A1A1A]/70 flex items-center gap-1.5 min-w-6 min-h-6 justify-center">
+                  <Check size={12} strokeWidth={2.5} /> 01
+                </span>
+                <div className="flex items-center gap-1.5 text-[#1A1A1A] font-semibold min-w-6 min-h-6 justify-center">
+                  <span className="w-6 h-6 rounded-full bg-[#1A1A1A]" />
+                  <span>02</span>
+                </div>
+                <NorthStarIcon size={12} className="text-[#1A1A1A]/30 min-w-6 min-h-6" />
+                <span className="min-w-6 min-h-6 flex items-center justify-center">03</span>
+                <span className="min-w-6 min-h-6 flex items-center justify-center">04</span>
+                <span className="min-w-6 min-h-6 flex items-center justify-center">05</span>
             </div>
           </div>
 
@@ -226,7 +226,7 @@ export const Step02Essence: React.FC<Step02Props> = ({
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-[#FAF8F5] border border-[#1A1A1A]/20 rounded-xl text-sm font-sans text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#FAF8F5] border border-[#1A1A1A]/20 rounded-xl text-base font-sans text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all"
                   />
                 </div>
               </div>
@@ -245,7 +245,7 @@ export const Step02Essence: React.FC<Step02Props> = ({
                     disabled={!isExactTimeKnown}
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className={`w-full pl-11 pr-4 py-3.5 bg-[#FAF8F5] border rounded-xl text-sm font-sans text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all ${
+                    className={`w-full pl-11 pr-4 py-3.5 bg-[#FAF8F5] border rounded-xl text-base font-sans text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all ${
                       isExactTimeKnown
                         ? 'border-[#1A1A1A]/20'
                         : 'border-[#1A1A1A]/10 bg-[#FAF8F5]/50 text-[#1A1A1A]/40 cursor-not-allowed'
@@ -258,7 +258,7 @@ export const Step02Essence: React.FC<Step02Props> = ({
                   <button
                     type="button"
                     onClick={() => setIsExactTimeKnown(true)}
-                    className={`py-3 px-4 rounded-xl border text-xs font-sans transition-all flex items-center gap-2.5 cursor-pointer ${
+                    className={`min-h-[44px] px-4 rounded-xl border text-xs font-sans transition-all flex items-center gap-2.5 cursor-pointer ${
                       isExactTimeKnown
                         ? 'bg-[#FAF8F5] border-[#1A1A1A] ring-1 ring-[#1A1A1A] text-[#1A1A1A] font-medium'
                         : 'bg-[#FAF8F5]/60 border-[#1A1A1A]/15 text-[#1A1A1A]/60 hover:border-[#1A1A1A]/40'
@@ -282,7 +282,7 @@ export const Step02Essence: React.FC<Step02Props> = ({
                       setIsExactTimeKnown(false);
                       setMode('fallback_not_sure');
                     }}
-                    className={`py-3 px-4 rounded-xl border text-xs font-sans transition-all flex items-center gap-2.5 cursor-pointer ${
+                    className={`min-h-[44px] px-4 rounded-xl border text-xs font-sans transition-all flex items-center gap-2.5 cursor-pointer ${
                       !isExactTimeKnown
                         ? 'bg-[#FAF8F5] border-[#1A1A1A] ring-1 ring-[#1A1A1A] text-[#1A1A1A] font-medium'
                         : 'bg-[#FAF8F5]/60 border-[#1A1A1A]/15 text-[#1A1A1A]/60 hover:border-[#1A1A1A]/40'
@@ -317,13 +317,13 @@ export const Step02Essence: React.FC<Step02Props> = ({
                     placeholder="Search city or country"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-[#FAF8F5] border border-[#1A1A1A]/20 rounded-xl text-sm font-sans text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all placeholder:text-[#1A1A1A]/30"
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#FAF8F5] border border-[#1A1A1A]/20 rounded-xl text-base font-sans text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] focus:ring-1 focus:ring-[#1A1A1A] transition-all placeholder:text-[#1A1A1A]/30"
                   />
                 </div>
               </div>
 
               {/* Primary Action Button */}
-              <div className="pt-2">
+              <div className="pt-2" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
                 <button
                   type="submit"
                   className="w-full py-4 px-6 bg-[#4A3B32] hover:bg-[#1A1A1A] text-[#FAF8F5] rounded-full text-xs font-sans uppercase tracking-[0.22em] font-medium transition-all shadow-sm flex items-center justify-center gap-3 cursor-pointer group"
