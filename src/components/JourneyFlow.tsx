@@ -131,56 +131,6 @@ export const JourneyFlow: React.FC<JourneyFlowProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F9F7F2] pb-20">
-      {/* Progress Timeline in Artistic Flair style */}
-      <div className="bg-[#FAF8F5] border-b border-[#1A1A1A]/10 sticky top-20 z-30 py-3 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          {[
-            { num: 1, label: 'Place + Shape' },
-            { num: 2, label: 'Essence' },
-            { num: 3, label: 'Intention' },
-            { num: 4, label: 'Craft' },
-            { num: 5, label: 'Reveal' },
-          ].map((s) => {
-            const isCurrent = currentStep === s.num;
-            const isCompleted = currentStep > s.num;
-            return (
-              <button
-                key={s.num}
-                type="button"
-                onClick={() => {
-                  if (s.num <= currentStep) {
-                    setCurrentStep(s.num as any);
-                  }
-                }}
-                disabled={s.num > currentStep}
-                className={`flex items-center gap-2 transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'text-[#1A1A1A] font-semibold'
-                    : isCompleted
-                    ? 'text-[#1A1A1A]/70 hover:text-[#1A1A1A]'
-                    : 'text-[#1A1A1A]/25 cursor-not-allowed'
-                }`}
-              >
-                <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-sans font-medium border ${
-                    isCurrent
-                      ? 'bg-[#1A1A1A] text-[#F9F7F2] border-[#1A1A1A]'
-                      : isCompleted
-                      ? 'bg-[#E8E4D9] text-[#1A1A1A] border-[#1A1A1A]/30'
-                      : 'border-[#1A1A1A]/20'
-                  }`}
-                >
-                  {isCompleted ? '✓' : `0${s.num}`}
-                </span>
-                <span className="hidden md:inline font-sans text-xs uppercase tracking-[0.15em]">
-                  {s.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Steps Component Rendering */}
       {currentStep === 1 && (
         <ErrorBoundary fallbackTitle="Place & Shape is unavailable" onReset={() => setCurrentStep(1)}>
