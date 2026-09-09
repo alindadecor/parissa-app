@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { JourneyFlow } from './components/JourneyFlow';
+import { JourneyHeader } from './components/JourneyHeader';
 import { ExploreRings } from './components/ExploreRings';
 import { CollectionsView } from './components/CollectionsView';
 import { EditorialPages } from './components/EditorialPages';
@@ -13,6 +14,15 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { useShopifyCheckout } from './hooks/useShopifyCheckout';
 
 type EditorialPage = 'journal' | 'about' | 'craft';
+
+function JourneyLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <JourneyHeader />
+      <div style={{ paddingTop: '60px' }}>{children}</div>
+    </>
+  );
+}
 
 function AppContent() {
   const navigate = useNavigate();
@@ -138,15 +148,17 @@ function AppContent() {
           <Route
             path="/journey"
             element={
-              <ErrorBoundary>
-                <JourneyFlow
-                  initialPresetShape={presetShape}
-                  onBackToHome={() => navigate('/')}
-                  onAddToCart={handleAddToCart}
-                  onSaveStory={handleSaveStory}
-                  isConfigSaved={isConfigSaved}
-                />
-              </ErrorBoundary>
+              <JourneyLayout>
+                <ErrorBoundary>
+                  <JourneyFlow
+                    initialPresetShape={presetShape}
+                    onBackToHome={() => navigate('/')}
+                    onAddToCart={handleAddToCart}
+                    onSaveStory={handleSaveStory}
+                    isConfigSaved={isConfigSaved}
+                  />
+                </ErrorBoundary>
+              </JourneyLayout>
             }
           />
           <Route
@@ -163,12 +175,14 @@ function AppContent() {
           <Route
             path="/collections"
             element={
-              <ErrorBoundary>
-                <CollectionsView
-                  onStartJourney={() => handleStartJourney('oval')}
-                  onExploreCollection={() => navigate('/explore')}
-                />
-              </ErrorBoundary>
+              <JourneyLayout>
+                <ErrorBoundary>
+                  <CollectionsView
+                    onStartJourney={() => handleStartJourney('oval')}
+                    onExploreCollection={() => navigate('/explore')}
+                  />
+                </ErrorBoundary>
+              </JourneyLayout>
             }
           />
           <Route
