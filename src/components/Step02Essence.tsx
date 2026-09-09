@@ -6,6 +6,7 @@ import {
   getZodiacSignFromDate,
   getZodiacMetadata,
 } from '../data/parissaData';
+import { GEMSTONES } from '../data/gemstones';
 import {
   ArrowRight,
   ArrowLeft,
@@ -23,8 +24,6 @@ import { NorthStarIcon } from './GemIcon';
 
 const WH_IMAGE =
   'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/wh.png?v=1788934365';
-const RUBY_IMAGE =
-  'https://cdn.shopify.com/s/files/1/1011/5058/9226/files/Ruby.png?v=1788934367';
 
 interface Step02Props {
   initialBirthData?: {
@@ -620,35 +619,43 @@ export const Step02Essence: React.FC<Step02Props> = ({
               <div className="md:col-span-5 flex justify-center">
                 <div className="relative group">
                   {/* Real gem imagery when available; faceted orb otherwise */}
-                  {activeArchetype.essenceGem.name === 'Ruby' ? (
-                    <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-[#F9F7F2] to-[#EAE6DD] border border-[#1A1A1A]/10 flex items-center justify-center shadow-md overflow-hidden">
-                      <img
-                        src={RUBY_IMAGE}
-                        alt="Ruby essence gem"
-                        className="w-full h-full object-cover rounded-2xl"
-                        loading="lazy"
-                      />
-                      <div className="absolute top-3 right-3 text-white drop-shadow">
-                        <NorthStarIcon size={16} />
+                  {(() => {
+                    const matchedGem =
+                      GEMSTONES.find(
+                        (g) =>
+                          g.name.toLowerCase() ===
+                          activeArchetype.essenceGem.name.toLowerCase()
+                      ) || null;
+                    return matchedGem ? (
+                      <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-[#F9F7F2] to-[#EAE6DD] border border-[#1A1A1A]/10 flex items-center justify-center shadow-md overflow-hidden">
+                        <img
+                          src={matchedGem.image}
+                          alt={`${matchedGem.name} essence gem`}
+                          className="w-full h-full object-cover rounded-2xl"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-3 right-3 text-white drop-shadow">
+                          <NorthStarIcon size={16} />
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                  <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-[#F9F7F2] to-[#EAE6DD] border border-[#1A1A1A]/10 flex items-center justify-center shadow-md">
-                    <div
-                      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full shadow-lg flex items-center justify-center border-4 border-white transition-transform duration-500 group-hover:scale-105"
-                      style={{ backgroundColor: activeArchetype.essenceGem.hex }}
-                    >
-                      <div
-                        className="w-16 h-16 rounded-full opacity-60 filter blur-[1px]"
-                        style={{ backgroundColor: activeArchetype.essenceGem.accentHex }}
-                      />
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/20 via-transparent to-white/40 pointer-events-none" />
-                    </div>
-                    <div className="absolute top-3 right-3 text-[#1A1A1A]/60">
-                      <NorthStarIcon size={16} />
-                    </div>
-                  </div>
-                  )}
+                    ) : (
+                      <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-[#F9F7F2] to-[#EAE6DD] border border-[#1A1A1A]/10 flex items-center justify-center shadow-md">
+                        <div
+                          className="w-28 h-28 sm:w-32 sm:h-32 rounded-full shadow-lg flex items-center justify-center border-4 border-white transition-transform duration-500 group-hover:scale-105"
+                          style={{ backgroundColor: activeArchetype.essenceGem.hex }}
+                        >
+                          <div
+                            className="w-16 h-16 rounded-full opacity-60 filter blur-[1px]"
+                            style={{ backgroundColor: activeArchetype.essenceGem.accentHex }}
+                          />
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/20 via-transparent to-white/40 pointer-events-none" />
+                        </div>
+                        <div className="absolute top-3 right-3 text-[#1A1A1A]/60">
+                          <NorthStarIcon size={16} />
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="absolute -bottom-2.5 -right-2.5 bg-[#FAF8F5] border border-[#1A1A1A]/10 px-2.5 py-1 rounded-full text-[10px] font-sans uppercase tracking-widest text-[#1A1A1A]/60 shadow-xs">
                     Talisman
