@@ -546,7 +546,7 @@ export const Step03Intention: React.FC<Step03Props> = ({
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {Object.entries(INTENTION_OUTCOMES)
-                  .filter(([key]) => key !== 'amethyst') // Only the 8 canonical outcomes per brief
+                  .filter(([key]) => key !== 'amethyst' && !key.includes('_')) // Only the 8 canonical outcomes per brief (excludes aliases)
                   .map(([key, outcome]) => {
                     const isSelected = activeOutcome.id === outcome.id;
                     const isRecommended = recommendedOutcome.id === outcome.id;
