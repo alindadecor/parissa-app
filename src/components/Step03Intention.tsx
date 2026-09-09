@@ -139,7 +139,7 @@ export const Step03Intention: React.FC<Step03Props> = ({
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-[#f7f3ed] text-[#17242c] lg:grid lg:grid-cols-[minmax(280px,340px)_1fr]">
+    <div className="min-h-[100dvh] bg-[#f7f3ed] text-[#17242c] overflow-x-hidden lg:grid lg:grid-cols-[minmax(280px,340px)_1fr]">
       {/* ============ LEFT SIDEBAR (desktop only) ============ */}
       <aside className="hidden lg:flex flex-col justify-between bg-[#13292a] text-[#f7f3ed] px-10 py-10 lg:sticky lg:top-20 lg:self-start lg:h-[calc(100dvh-80px)]">
         <div className="space-y-12">
@@ -238,9 +238,35 @@ export const Step03Intention: React.FC<Step03Props> = ({
                   ? 'Back to Questions'
                   : `Back to 0${reflectionIndex}`}
               </span>
-            </button>
+              </button>
+            </div>
+
+            {/* Fixed bottom CTA bar — mobile only */}
+            <div
+              className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-[#faf8f4] border-t border-[#e8e0d8]"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
+            >
+              <div className="flex items-center gap-3 px-4 py-3 max-w-3xl mx-auto">
+                <button
+                  type="button"
+                  onClick={handleRestartQuiz}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-[11px] font-sans uppercase tracking-[0.18em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer shrink-0"
+                >
+                  <RotateCcw size={12} />
+                  <span>Retake</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onComplete(activeOutcome)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-[11px] font-sans uppercase tracking-[0.2em] font-medium transition-all shadow-sm cursor-pointer group"
+                >
+                  <Sparkles size={12} />
+                  <span>Continue to Craft</span>
+                  <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
 
         {reflectionIndex < 5 ? (
           /* ================= QUIZ VIEW (Q1 to Q5) =================
@@ -506,19 +532,19 @@ export const Step03Intention: React.FC<Step03Props> = ({
             </div>
 
             {/* Full Permission to Choose Differently: 8 Approved Intention Gems Palette */}
-            <div className="space-y-4 pt-6">
-              <div className="flex items-center justify-between border-b border-[#d4cbc1] pb-3">
+            <div className="space-y-4 pt-6 pb-[120px] sm:pb-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 border-b border-[#d4cbc1] pb-3">
                 <h3 className="font-sans text-xs uppercase tracking-[0.25em] font-semibold text-[#17242c]">
                   Choose Differently · 8 Intention Gems
                 </h3>
-                <span className="text-[11px] font-sans uppercase tracking-wider text-[#69635d]">
+                <span className="text-[11px] font-sans uppercase tracking-wider text-[#69635d] text-right">
                   {activeOutcome.id !== recommendedOutcome.id
                     ? `Chosen by you (Recommended: ${recommendedOutcome.title})`
                     : 'Your recommendation'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {Object.entries(INTENTION_OUTCOMES)
                   .filter(([key]) => key !== 'amethyst') // Only the 8 canonical outcomes per brief
                   .map(([key, outcome]) => {
@@ -530,19 +556,19 @@ export const Step03Intention: React.FC<Step03Props> = ({
                         key={key}
                         type="button"
                         onClick={() => setActiveOutcome(outcome)}
-                        className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer relative ${
+                        className={`p-2.5 sm:p-4 rounded-xl border text-left flex flex-col items-center text-center relative min-h-[80px] transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#eee6dd] border-[#4d3023] ring-2 ring-[#4d3023]/15 shadow-sm'
                             : 'bg-[#eee6dd]/50 border-[#d4cbc1] hover:border-[#4d3023]/50'
                         }`}
                       >
                         {isRecommended && (
-                          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-[#13292a] text-[#f7f3ed] text-[9px] font-sans uppercase tracking-wider font-semibold">
+                          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-[#13292a] text-[#f7f3ed] text-[9px] font-sans uppercase tracking-wider font-semibold whitespace-nowrap">
                             Recommended
                           </span>
                         )}
 
-                        <div className="flex items-center gap-3 mb-3">
+                        <div className="flex flex-col items-center gap-2 mb-3">
                           <div
                             className="w-8 h-8 rounded-full shrink-0 border border-[#f7f3ed] shadow-sm"
                             style={{ backgroundColor: outcome.intentionGem.hex }}
@@ -557,7 +583,7 @@ export const Step03Intention: React.FC<Step03Props> = ({
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] font-sans pt-1 border-t border-[#13292a]/5">
+                        <div className="w-full flex items-center justify-between text-[11px] font-sans pt-1 border-t border-[#13292a]/5">
                           <span className="text-[#17242c]/60 truncate">{outcome.title}</span>
                           {isSelected && (
                             <Check size={13} className="text-[#4d3023] shrink-0 font-bold" />
@@ -569,8 +595,8 @@ export const Step03Intention: React.FC<Step03Props> = ({
               </div>
             </div>
 
-            {/* Bottom CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-[#d4cbc1] mt-8">
+            {/* Bottom CTAs — desktop only (inline) */}
+            <div className="hidden sm:flex items-center justify-between gap-4 pt-8 border-t border-[#d4cbc1] mt-8">
               <button
                 type="button"
                 onClick={handleRestartQuiz}
@@ -589,6 +615,32 @@ export const Step03Intention: React.FC<Step03Props> = ({
                 <span>Continue to Craft</span>
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
               </button>
+            </div>
+
+            {/* Fixed bottom CTA bar — mobile only */}
+            <div
+              className="lg:hidden fixed inset-x-0 bottom-0 z-50"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)', background: '#faf8f4', borderTop: '1px solid #e8e0d8' }}
+            >
+              <div className="flex items-center gap-3 px-4 py-3 max-w-3xl mx-auto">
+                <button
+                  type="button"
+                  onClick={handleRestartQuiz}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-[#d4cbc1] text-[11px] font-sans uppercase tracking-[0.18em] text-[#17242c]/60 hover:text-[#17242c] hover:border-[#17242c] transition-all cursor-pointer shrink-0"
+                >
+                  <RotateCcw size={12} />
+                  <span>Retake</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onComplete(activeOutcome)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#4d3023] hover:bg-[#2f1e12] text-[#f7f3ed] rounded-full text-[11px] font-sans uppercase tracking-[0.2em] font-medium transition-all shadow-sm cursor-pointer group"
+                >
+                  <Sparkles size={12} />
+                  <span>Continue to Craft</span>
+                  <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
             </div>
           </div>
         )}
