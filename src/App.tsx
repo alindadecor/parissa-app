@@ -156,7 +156,9 @@ function AppContent() {
                 <JourneyLayout>
                   <JourneyFlow
                     initialPresetShape={presetShape}
-                    onBackToHome={() => navigate('/')}
+                    onBackToHome={() =>
+                      window.location.assign('https://parissa-diamond-tta2zg1y.myshopify.com/')
+                    }
                     onAddToCart={handleAddToCart}
                     onSaveStory={handleSaveStory}
                     isConfigSaved={isConfigSaved}
