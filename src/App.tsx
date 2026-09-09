@@ -120,6 +120,23 @@ function AppContent() {
     setIsBagOpen(true);
   };
 
+  const handleContinueToRing = async (config: RingConfiguration) => {
+    const next = cartItems.some((item) => item.id === config.id)
+      ? cartItems
+      : [config, ...cartItems];
+    setCartItems(next);
+
+    let checkoutUrl: string | null = null;
+    try {
+      if (isConfigured) checkoutUrl = await createCheckout(next);
+    } catch {
+      checkoutUrl = null;
+    }
+
+    window.location.href =
+      checkoutUrl || 'https://parissa-diamond-tta2zg1y.myshopify.com/checkout';
+  };
+
   const handleSaveStory = (config: RingConfiguration) => {
     setSavedStories((prev) => {
       const existing = prev.find((item) => item.id === config.id);
@@ -160,6 +177,7 @@ function AppContent() {
                       window.location.assign('https://parissa-diamond-tta2zg1y.myshopify.com/')
                     }
                     onAddToCart={handleAddToCart}
+                    onContinueToRing={handleContinueToRing}
                     onSaveStory={handleSaveStory}
                     isConfigSaved={isConfigSaved}
                   />

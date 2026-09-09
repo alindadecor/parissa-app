@@ -21,6 +21,7 @@ import { Step05Reveal } from './Step05Reveal';
 interface JourneyFlowProps {
   onBackToHome: () => void;
   onAddToCart: (config: RingConfiguration) => void;
+  onContinueToRing: (config: RingConfiguration) => void;
   onSaveStory: (config: RingConfiguration) => void;
   isConfigSaved: (configId: string) => boolean;
   initialPresetShape?: DiamondShape;
@@ -29,6 +30,7 @@ interface JourneyFlowProps {
 export const JourneyFlow: React.FC<JourneyFlowProps> = ({
   onBackToHome,
   onAddToCart,
+  onContinueToRing,
   onSaveStory,
   isConfigSaved,
   initialPresetShape = 'oval',
@@ -184,7 +186,7 @@ export const JourneyFlow: React.FC<JourneyFlowProps> = ({
         <ErrorBoundary fallbackTitle="Reveal is unavailable" onReset={() => setCurrentStep(5)}>
           <Step05Reveal
             ringConfig={currentRingConfig}
-            onContinueToRing={() => onAddToCart(currentRingConfig)}
+            onContinueToRing={() => onContinueToRing(currentRingConfig)}
             onSaveStory={() => onSaveStory(currentRingConfig)}
             onChangeAnyChoice={() => setShowChangeModal(true)}
             isSaved={isConfigSaved(currentRingConfig.id)}
